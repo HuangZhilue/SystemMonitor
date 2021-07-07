@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj": {}
+    "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj": {}
   },
   "projects": {
-    "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj": {
+    "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
+        "projectUniqueName": "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
         "projectName": "SystemMonitor",
-        "projectPath": "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
+        "projectPath": "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
         "packagesPath": "C:\\Users\\huang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\obj\\",
+        "outputPath": "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\huang\\AppData\\Roaming\\NuGet\\NuGet.Config",

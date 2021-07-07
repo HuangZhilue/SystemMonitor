@@ -58,8 +58,8 @@ namespace SystemMonitor.Models
         {
             get => _name;
             set => SetProperty(ref _name, value);
-        }        
-        
+        }
+
         public string Name2
         {
             get => _name2;

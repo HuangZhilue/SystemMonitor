@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OBL98XWwwguZCNCCYyRK7wyNINrBlb1KJv0JuTUYBM2T6V6g2KM4ojO7pQeSs+zloHLDj1k9Wzyph3ylgNZz/g==",
+  "dgSpecHash": "4EpNVXjA/+9oTAxlkM7XhC2X/SX1YJq383UIGJkDgZFzXCC6vfDpbY8Fo9qNtQrXDaD9sVTI/P2Qc/wHAHGHsA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\huang\\Source\\Repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
+  "projectFilePath": "C:\\Users\\huang\\source\\repos\\SystemMonitor\\SystemMonitor\\SystemMonitor.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\huang\\.nuget\\packages\\fluentscheduler\\5.5.1\\fluentscheduler.5.5.1.nupkg.sha512",
     "C:\\Users\\huang\\.nuget\\packages\\h.notifyicon\\1.0.18\\h.notifyicon.1.0.18.nupkg.sha512",
