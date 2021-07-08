@@ -13,25 +13,25 @@ namespace SystemMonitor.Services
 {
     public static class HardwareServicesCallBack
     {
-        public delegate void CpuChangeEventHandler(HardwareModel.Hardware4Cpu cpu);
+        public delegate void CpuChangeCallback(HardwareModel.Hardware4Cpu cpu);
 
-        public delegate void GpuChangeEventHandler(HardwareModel.Hardware4Gpu gpu);
+        public delegate void GpuChangeCallback(HardwareModel.Hardware4Gpu gpu);
 
-        public delegate void MemoryChangeEventHandler(HardwareModel.Hardware4Memory memory);
+        public delegate void MemoryChangeCallback(HardwareModel.Hardware4Memory memory);
 
-        public delegate void NetworkChangeEventHandler(HardwareModel.Hardware4Network network);
+        public delegate void NetworkChangeCallback(HardwareModel.Hardware4Network network);
 
-        public delegate void StorageChangeEventHandler(HardwareModel.Hardware4Disk disk);
+        public delegate void StorageChangeCallback(HardwareModel.Hardware4Disk disk);
 
-        public delegate void HardwareChangeEventHandler(List<HardwareType> list);
+        public delegate void HardwareChangeCallback(List<HardwareType> list);
 
-        public static event CpuChangeEventHandler CpuChangeEvent;
-        public static event GpuChangeEventHandler GpuAChangeEvent;
-        public static event GpuChangeEventHandler GpuNChangeEvent;
-        public static event MemoryChangeEventHandler MemoryChangeEvent;
-        public static event NetworkChangeEventHandler NetworkChangeEvent;
-        public static event StorageChangeEventHandler StorageChangeEvent;
-        public static event HardwareChangeEventHandler HardwareChangeEvent;
+        public static event CpuChangeCallback CpuChangeEvent;
+        public static event GpuChangeCallback GpuAChangeEvent;
+        public static event GpuChangeCallback GpuNChangeEvent;
+        public static event MemoryChangeCallback MemoryChangeEvent;
+        public static event NetworkChangeCallback NetworkChangeEvent;
+        public static event StorageChangeCallback StorageChangeEvent;
+        public static event HardwareChangeCallback HardwareChangeEvent;
 
         internal static void OnCpuChange(HardwareModel.Hardware4Cpu data)
         {
@@ -99,14 +99,31 @@ namespace SystemMonitor.Services
             {
                 ActiveAdapterName.Clear();
                 var adapters = NetworkInterface.GetAllNetworkInterfaces();
-                foreach (var adapter in adapters.Where(a => a.OperationalStatus == OperationalStatus.Up))
-                {
-                    ActiveAdapterName.Add(adapter.Name);
-                }
+                ActiveAdapterName.AddRange(
+                    adapters.Where(a => a.OperationalStatus == OperationalStatus.Up)
+                    .Select(adapter => adapter.Name)
+                    );
             }
 
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             Computer.HardwareAdded += ComputerOnHardwareChange;
             Computer.HardwareRemoved += ComputerOnHardwareChange;
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            lock (Lock)
+            {
+                Debug.WriteLine("NetworkChange_NetworkAddressChanged");
+                IsHardwareChange = true;
+                EnableHardwareList.Clear();
+                ActiveAdapterName.Clear();
+                var adapters = NetworkInterface.GetAllNetworkInterfaces();
+                ActiveAdapterName.AddRange(
+                    adapters.Where(a => a.OperationalStatus == OperationalStatus.Up)
+                    .Select(adapter => adapter.Name)
+                    );
+            }
         }
 
         private void ComputerOnHardwareChange(IHardware hardware)
@@ -120,44 +137,31 @@ namespace SystemMonitor.Services
                 {
                     ActiveAdapterName.Clear();
                     var adapters = NetworkInterface.GetAllNetworkInterfaces();
-                    foreach (var adapter in adapters.Where(a => a.OperationalStatus == OperationalStatus.Up))
-                    {
-                        ActiveAdapterName.Add(adapter.Name);
-                    }
+                    ActiveAdapterName.AddRange(
+                        adapters.Where(a => a.OperationalStatus == OperationalStatus.Up)
+                        .Select(adapter => adapter.Name)
+                        );
                 }
-
-                //JobManager.JobEnd += JobManagerOnJobEnd;
             }
         }
-
-        //private void JobManagerOnJobEnd(JobEndInfo obj)
-        //{
-        //    lock (Lock)
-        //    {
-        //        Debug.WriteLine("JobManager.JobEnd -= JobManagerOnJobEnd;\t\t" + obj.Name);
-        //        JobManager.JobEnd -= JobManagerOnJobEnd;
-        //        IsHardwareChange = true;
-        //        EnableHardwareList.Clear();
-        //    }
-        //}
 
         public void Execute()
         {
             lock (Lock)
             {
-                //Debug.WriteLine(DateTime.Now.ToString("O"));
+                //Debug.WriteLine("Execute");
                 Computer.Accept(UpdateVisitor);
 
                 _ = Computer.Hardware.Where(t => t.HardwareType == HardwareType.Cpu).Select((t, i) =>
                 {
                     var cpuClock = t.Sensors
-                        .Where(s => s.SensorType == SensorType.Clock && s.Name.ToUpper().Contains("CORE"))
+                        .Where(s => s.SensorType == SensorType.Clock && s.Name.Contains("CORE", StringComparison.OrdinalIgnoreCase))
                         .Average(a => a.Value) ?? 0f;
                     var temperature = t.Sensors
                         .Where(s => s.SensorType == SensorType.Temperature)
                         .Average(a => a.Value) ?? -999f;
                     var load = t.Sensors
-                        .Where(s => s.SensorType == SensorType.Load && s.Name.ToUpper().Contains("TOTAL"))
+                        .Where(s => s.SensorType == SensorType.Load && s.Name.Contains("TOTAL", StringComparison.OrdinalIgnoreCase))
                         .Average(a => a.Value) ?? 0f;
                     var m = new HardwareModel.Hardware4Cpu
                     {
@@ -169,8 +173,15 @@ namespace SystemMonitor.Services
                         CpuTemperatures = temperature,
                         Identifier = t.Identifier
                     };
-                    if (IsHardwareChange) EnableHardwareList.Add(t.HardwareType);
-                    else HardwareServicesCallBack.OnCpuChange(m);
+                    if (IsHardwareChange)
+                    {
+                        EnableHardwareList.Add(t.HardwareType);
+                    }
+                    else
+                    {
+                        HardwareServicesCallBack.OnCpuChange(m);
+                    }
+
                     return m;
                 }).ToList();
 
@@ -182,10 +193,10 @@ namespace SystemMonitor.Services
                     var data = t.Sensors
                         .Where(s =>
                             s.SensorType == SensorType.Data &&
-                            !s.Name.ToUpper().Contains("VIRTUAL")).ToList();
-                    var used = data.Where(s => s.Name.ToUpper().Contains("USED"))
+                            !s.Name.Contains("VIRTUAL", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var used = data.Where(s => s.Name.Contains("USED", StringComparison.OrdinalIgnoreCase))
                         .Average(a => a.Value) ?? 0f;
-                    var available = data.Where(s => s.Name.ToUpper().Contains("AVAILABLE"))
+                    var available = data.Where(s => s.Name.Contains("AVAILABLE", StringComparison.OrdinalIgnoreCase))
                         .Average(a => a.Value) ?? 0f;
                     var m = new HardwareModel.Hardware4Memory
                     {
@@ -196,16 +207,23 @@ namespace SystemMonitor.Services
                         MemoryUsed = used,
                         Identifier = t.Identifier
                     };
-                    if (IsHardwareChange) EnableHardwareList.Add(t.HardwareType);
-                    else HardwareServicesCallBack.OnMemoryChange(m);
+                    if (IsHardwareChange)
+                    {
+                        EnableHardwareList.Add(t.HardwareType);
+                    }
+                    else
+                    {
+                        HardwareServicesCallBack.OnMemoryChange(m);
+                    }
+
                     return m;
                 }).ToList();
 
                 _ = Computer.Hardware.Where(t => t.HardwareType == HardwareType.GpuAmd).Select((t, i) =>
                 {
                     var clock = t.Sensors.Where(s => s.SensorType == SensorType.Clock).ToList();
-                    var core = clock.Where(s => s.Name.ToUpper().Contains("CORE")).Average(a => a.Value) ?? 0f;
-                    var memory = clock.Where(s => s.Name.ToUpper().Contains("MEMORY")).Average(a => a.Value) ?? 0f;
+                    var core = clock.Where(s => s.Name.Contains("CORE", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var memory = clock.Where(s => s.Name.Contains("MEMORY", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
                     var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).Average(a => a.Value) ?? 0f;
                     var temperature = t.Sensors.Where(s => s.SensorType == SensorType.Temperature)
                         .Average(a => a.Value) ?? -999f;
@@ -228,8 +246,8 @@ namespace SystemMonitor.Services
                 _ = Computer.Hardware.Where(t => t.HardwareType == HardwareType.GpuNvidia).Select((t, i) =>
                 {
                     var clock = t.Sensors.Where(s => s.SensorType == SensorType.Clock).ToList();
-                    var core = clock.Where(s => s.Name.ToUpper().Contains("CORE")).Average(a => a.Value) ?? 0f;
-                    var memory = clock.Where(s => s.Name.ToUpper().Contains("MEMORY")).Average(a => a.Value) ?? 0f;
+                    var core = clock.Where(s => s.Name.Contains("CORE", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var memory = clock.Where(s => s.Name.Contains("MEMORY", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
                     var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).Average(a => a.Value) ?? 0f;
                     var temperature = t.Sensors.Where(s => s.SensorType == SensorType.Temperature)
                         .Average(a => a.Value) ?? -999f;
@@ -253,11 +271,11 @@ namespace SystemMonitor.Services
                 {
                     var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).ToList();
                     var throughput = t.Sensors.Where(s => s.SensorType == SensorType.Throughput).ToList();
-                    var lUsed = load.Where(s => s.Name.ToUpper().Contains("USED")).Average(a => a.Value) ?? 0f;
-                    var lWrite = load.Where(s => s.Name.ToUpper().Contains("WRITE")).Average(a => a.Value) ?? 0f;
-                    var lTotal = load.Where(s => s.Name.ToUpper().Contains("TOTAL")).Average(a => a.Value) ?? 0f;
-                    var tRead = throughput.Where(s => s.Name.ToUpper().Contains("READ")).Average(a => a.Value) ?? 0f;
-                    var tWrite = throughput.Where(s => s.Name.ToUpper().Contains("WRITE")).Average(a => a.Value) ?? 0f;
+                    var lUsed = load.Where(s => s.Name.Contains("USED", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var lWrite = load.Where(s => s.Name.Contains("WRITE", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var lTotal = load.Where(s => s.Name.Contains("TOTAL", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var tRead = throughput.Where(s => s.Name.Contains("READ", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
+                    var tWrite = throughput.Where(s => s.Name.Contains("WRITE", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
 
                     var m = new HardwareModel.Hardware4Disk
                     {
@@ -284,10 +302,10 @@ namespace SystemMonitor.Services
                             var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).Average(a => a.Value) ??
                                        0f;
                             var throughput = t.Sensors.Where(s => s.SensorType == SensorType.Throughput).ToList();
-                            var u = throughput.Where(s => s.Name.ToUpper().Contains("UPLOAD")).Average(a => a.Value) ??
+                            var u = throughput.Where(s => s.Name.Contains("UPLOAD", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ??
                                     0f;
                             var d =
-                                throughput.Where(s => s.Name.ToUpper().Contains("DOWNLOAD")).Average(a => a.Value) ??
+                                throughput.Where(s => s.Name.Contains("DOWNLOAD", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ??
                                 0f;
                             var m = new HardwareModel.Hardware4Network
                             {
@@ -334,7 +352,7 @@ namespace SystemMonitor.Services
         }
     }
 
-    public class HardwareModel
+    public static class HardwareModel
     {
         public class Hardware4Cpu
         {

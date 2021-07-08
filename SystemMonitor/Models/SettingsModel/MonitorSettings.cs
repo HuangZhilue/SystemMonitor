@@ -9,7 +9,13 @@ namespace SystemMonitor.Models.SettingsModel
 {
     public class MonitorSettings
     {
-        public int LoopInterval { get; set; }
+        private int _loopInterval;
+
+        public int LoopInterval
+        {
+            get => _loopInterval;
+            set => _loopInterval = value < 100 ? 100 : value;
+        }
         public bool IsCpuEnabled { get; set; }
         public bool IsGpuEnabled { get; set; }
         public bool IsMemoryEnabled { get; set; }
@@ -21,9 +27,7 @@ namespace SystemMonitor.Models.SettingsModel
         public void Save2Json()
         {
             var obj = JObject.Parse(JsonConvert.SerializeObject(this));
-
             var filePath = AppContext.BaseDirectory + "AppSettings.json";
-
             using var writer = new StreamWriter(filePath);
             using var jsonWriter = new JsonTextWriter(writer) {Formatting = Formatting.Indented};
             obj.WriteTo(jsonWriter);
@@ -32,6 +36,7 @@ namespace SystemMonitor.Models.SettingsModel
 
     public class MonitorViewSettings
     {
+        public int DotDensity { get; set; } = 60;
         public MonitorViewBase CpuView { get; set; }
         public MonitorViewBase MemoryView { get; set; }
         public MonitorViewBase StorageView { get; set; }

@@ -38,7 +38,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Height="55" VerticalAlignment="Top">
+                                        <Grid Height="55" VerticalAlignment="Top" Visibility="{Binding Visibility}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="2" />
                                                 <RowDefinition Height="*" />

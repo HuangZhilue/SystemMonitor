@@ -33,7 +33,7 @@ namespace SystemMonitor.ViewModels
         /// <summary>
         /// 0"", 1"Kbps", 2"Mbps", 3"Gbps", 4"Tbps", 5"Pbps"
         /// </summary>
-        private static string[] Units { get; } = {"", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps"};
+        private static string[] Units { get; } = { "", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps" };
 
         private static double Mod { get; } = 1024.0;
 
@@ -52,7 +52,7 @@ namespace SystemMonitor.ViewModels
         {
             Title = "System Monitor";
 
-            if (MonitorSettings.HardwareIndex.Count <= 0)
+            if (MonitorSettings.HardwareIndex.Count == 0)
             {
                 MonitorSettings.HardwareIndex.Add(HardwareType.Cpu);
                 MonitorSettings.HardwareIndex.Add(HardwareType.Memory);
@@ -86,17 +86,19 @@ namespace SystemMonitor.ViewModels
                 MonitorSettings.HardwareIndex.ForEach(i =>
                 {
                     var list2 = new TrulyObservableCollection<DisplayItems>();
-                    list.Where(l => l == i).ToList().ForEach(_ => { list2.Add(new DisplayItems()); });
-                    if (list2.Count > 0) DisplayItemCollection.Add(list2);
+                    list.Where(l => l == i).ToList().ForEach(_ => list2.Add(new DisplayItems { Visibility = Visibility.Visible }));
+                    //if (list2.Count > 0) DisplayItemCollection.Add(list2);
+                    //else
+                    DisplayItemCollection.Add(list2);
                 });
-                if (DisplayItemCollection.Count != MonitorSettings.HardwareIndex.Count)
-                {
-                    //MonitorSettings.HardwareIndex.Clear();
-                    var l1 = MonitorSettings.HardwareIndex.FindAll(a => !list.Exists(b => b == a));
-                    MonitorSettings.HardwareIndex.RemoveAll(a => l1.Exists(b => b == a));
-                    MonitorSettings.HardwareIndex.AddRange(l1);
-                    MonitorSettings.Save2Json();
-                }
+                //if (DisplayItemCollection.Count != MonitorSettings.HardwareIndex.Count)
+                //{
+                //    //MonitorSettings.HardwareIndex.Clear();
+                //    var l1 = MonitorSettings.HardwareIndex.FindAll(a => !list.Exists(b => b == a));
+                //    MonitorSettings.HardwareIndex.RemoveAll(a => l1.Exists(b => b == a));
+                //    MonitorSettings.HardwareIndex.AddRange(l1);
+                //    MonitorSettings.Save2Json();
+                //}
                 JobManager.Start();
             }).RunInBackground();
 
@@ -142,7 +144,10 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.CpuView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (CPU)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (CPU)");
+                }
             }).RunInBackground();
         }
 
@@ -179,7 +184,10 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.GpuView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (GPU_A)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (GPU_A)");
+                }
             }).RunInBackground();
         }
 
@@ -216,7 +224,10 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.GpuView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (GPU_N)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (GPU_N)");
+                }
             }).RunInBackground();
         }
 
@@ -251,7 +262,10 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.MemoryView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (Memory)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (Memory)");
+                }
             }).RunInBackground();
         }
 
@@ -316,7 +330,10 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.NetworkView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (Network)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (Network)");
+                }
             }).RunInBackground();
         }
 
@@ -350,256 +367,12 @@ namespace SystemMonitor.ViewModels
                             MonitorSettings.MonitorViewSettings.StorageView.FillBrush[3]));
                     item.PointCollection.ChangePoints(Vector, 1);
                 }
-                else throw new Exception("Out of HardwareIndex (Storage)");
+                else
+                {
+                    throw new Exception("Out of HardwareIndex (Storage)");
+                }
             }).RunInBackground();
         }
-
-        //private void Timer99_Tick(object sender, EventArgs e)
-        //{
-        //    //Computer.Accept(UpdateVisitor);
-        //    DataModel.PauseObservable();
-        //    var cpuIndex = 0;
-        //    var gpuIndex = 0;
-        //    var diskIndex = 0;
-        //    var memoryIndex = 0;
-        //    var networkIndex = 0;
-        //    foreach (var hardware in Computer.Hardware)
-        //    {
-        //        Data.ClearData();
-        //        switch (hardware.HardwareType)
-        //        {
-        //            case HardwareType.Cpu:
-        //            {
-        //                //CpuModel.Model.CpuName = hardware.Name;
-        //                //CpuModel.Model.CpuClocks.Clear();
-        //                //foreach (var sensor in hardware.Sensors)
-        //                //{
-        //                //    switch (sensor.SensorType)
-        //                //    {
-        //                //        case SensorType.Clock:
-        //                //            if (sensor.Name.ToUpper().Contains("CORE"))
-        //                //                CpuModel.Model.CpuClocks.Add(sensor.Value ?? 0);
-        //                //            break;
-        //                //        case SensorType.Temperature:
-        //                //            CpuModel.Model.CpuTemperatures = sensor.Value ?? 0;
-        //                //            break;
-        //                //        case SensorType.Load:
-        //                //            if (sensor.Name.ToUpper().Contains("TOTAL"))
-        //                //                CpuModel.Model.CpuLoad = sensor.Value ?? 0;
-        //                //            break;
-        //                //    }
-        //                //}
-
-        //                //Data.Index = cpuIndex++ == 0 ? "" : $"{cpuIndex}";
-        //                //Data.Name = "CPU";
-        //                //Data.Item1 = $"{Convert.ToInt32(CpuModel.Model.CpuLoad)}%";
-        //                //Data.Item2 = $"{GHzConvert(CpuModel.Model.CpuClock, out var unit)}{unit}";
-        //                //Data.Item3 = Math.Abs(CpuModel.Model.CpuTemperatures - -999) <= 0
-        //                //    ? ""
-        //                //    : $"{Convert.ToInt32(CpuModel.Model.CpuTemperatures)}℃";
-        //                //Data.PointData = Convert.ToInt32(CpuModel.Model.CpuLoad);
-        //                //Data.FillBrush = CpuModel.Model.FillBrush;
-        //                //Data.StrokeBrush = CpuModel.Model.StrokeBrush;
-        //            }
-        //                break;
-        //            case HardwareType.Memory:
-        //            {
-        //                foreach (var sensor in hardware.Sensors)
-        //                {
-        //                    switch (sensor.SensorType)
-        //                    {
-        //                        case SensorType.Load:
-        //                            MemoryModel.Model.MemoryLoad = sensor.Value ?? 0;
-        //                            break;
-        //                        case SensorType.Data:
-        //                            if (sensor.Name.ToUpper().Contains("USED") &&
-        //                                !sensor.Name.ToUpper().Contains("VIRTUAL"))
-        //                            {
-        //                                MemoryModel.Model.MemoryUsed = sensor.Value ?? 0;
-        //                            }
-        //                            else if (sensor.Name.ToUpper().Contains("AVAILABLE") &&
-        //                                     !sensor.Name.ToUpper().Contains("VIRTUAL"))
-        //                            {
-        //                                MemoryModel.Model.MemoryAvailable = sensor.Value ?? 0;
-        //                            }
-
-        //                            break;
-        //                    }
-        //                }
-
-        //                Data.Index = memoryIndex++ == 0 ? "" : $"{memoryIndex}";
-        //                Data.Name = "内存";
-        //                Data.Item1 = $"{MemoryModel.Model.MemoryUsedDisplay}";
-        //                Data.Item2 = $"{Convert.ToInt32(MemoryModel.Model.MemoryLoad)}%";
-        //                Data.PointData = Convert.ToInt32(MemoryModel.Model.MemoryLoad);
-        //                Data.FillBrush = MemoryModel.Model.FillBrush;
-        //                Data.StrokeBrush = MemoryModel.Model.StrokeBrush;
-        //            }
-        //                break;
-        //            case HardwareType.GpuNvidia:
-        //            case HardwareType.GpuAmd:
-        //                //break;
-        //            {
-        //                GpuModel.Model.GpuName = hardware.Name;
-        //                foreach (var sensor in hardware.Sensors)
-        //                {
-        //                    switch (sensor.SensorType)
-        //                    {
-        //                        case SensorType.Clock:
-        //                            if (sensor.Name.ToUpper().Contains("CORE"))
-        //                            {
-        //                                GpuModel.Model.GpuClock4Core = sensor.Value ?? 0;
-        //                            }
-        //                            else if (sensor.Name.ToUpper().Contains("MEMORY"))
-        //                            {
-        //                                GpuModel.Model.GpuClock4Memory = sensor.Value ?? 0;
-        //                            }
-
-        //                            break;
-        //                        case SensorType.Temperature:
-        //                            GpuModel.Model.GpuTemperatures = sensor.Value ?? 0;
-        //                            break;
-        //                        case SensorType.Load:
-        //                            GpuModel.Model.GpuLoad = sensor.Value ?? 0;
-        //                            break;
-        //                    }
-        //                }
-
-        //                Data.Index = gpuIndex++ == 0 ? "" : $"{gpuIndex}";
-        //                Data.Name = "GPU";
-        //                Data.Item1 = $"{Convert.ToInt32(GpuModel.Model.GpuLoad)}%";
-        //                Data.Item2 = Math.Abs(GpuModel.Model.GpuTemperatures - -999) <= 0
-        //                    ? ""
-        //                    : $"{Convert.ToInt32(GpuModel.Model.GpuTemperatures)}℃";
-        //                Data.PointData = Convert.ToInt32(GpuModel.Model.GpuLoad);
-        //                Data.FillBrush = GpuModel.Model.FillBrush;
-        //                Data.StrokeBrush = GpuModel.Model.StrokeBrush;
-        //            }
-        //                break;
-        //            case HardwareType.Storage:
-        //                //break;
-        //                DiskModel.Model.DiskName = hardware.Name;
-        //                foreach (var sensor in hardware.Sensors)
-        //                {
-        //                    switch (sensor.SensorType)
-        //                    {
-        //                        case SensorType.Load:
-        //                            if (sensor.Name.ToUpper().Contains("USED"))
-        //                            {
-        //                                DiskModel.Model.DiskLoad4UsedSpace = sensor.Value ?? 0;
-        //                            }
-        //                            else if (sensor.Name.ToUpper().Contains("WRITE"))
-        //                            {
-        //                                DiskModel.Model.DiskLoad4WriteActivity = sensor.Value ?? 0;
-        //                            }
-        //                            else if (sensor.Name.ToUpper().Contains("TOTAL"))
-        //                            {
-        //                                DiskModel.Model.DiskLoad4TotalActivity = sensor.Value ?? 0;
-        //                            }
-
-        //                            break;
-        //                        case SensorType.Throughput:
-        //                            if (sensor.Name.ToUpper().Contains("READ"))
-        //                            {
-        //                                DiskModel.Model.DiskThroughput4ReadRate = sensor.Value ?? 0;
-        //                            }
-        //                            else if (sensor.Name.ToUpper().Contains("WRITE"))
-        //                            {
-        //                                DiskModel.Model.DiskThroughput4WriteRate = sensor.Value ?? 0;
-        //                            }
-
-        //                            break;
-        //                    }
-        //                }
-
-        //                Data.Index = diskIndex++ == 0 ? "" : $"{diskIndex}";
-        //                Data.Name = $"磁盘 {DiskModel.Model.DiskName}";
-        //                Data.Item1 = $"{Convert.ToInt32(DiskModel.Model.DiskLoad4TotalActivity)}%";
-        //                Data.PointData = Convert.ToInt32(DiskModel.Model.DiskLoad4TotalActivity);
-        //                Data.FillBrush = DiskModel.Model.FillBrush;
-        //                Data.StrokeBrush = DiskModel.Model.StrokeBrush;
-
-        //                break;
-        //            case HardwareType.Network:
-        //                //break;
-        //                if (ActiveAdapterName.Any(a => a.Trim() == hardware.Name.Trim()))
-        //                {
-        //                    NetworkModel.Model.NetworkName = hardware.Name;
-        //                    NetworkModel.Model.IsActive = true;
-        //                    foreach (var sensor in hardware.Sensors)
-        //                    {
-        //                        switch (sensor.SensorType)
-        //                        {
-        //                            case SensorType.Load:
-        //                                if (sensor.Name.ToUpper().Contains("NETWORK UTILIZATION"))
-        //                                {
-        //                                    NetworkModel.Model.NetworkLoad = sensor.Value ?? 0;
-        //                                }
-
-        //                                break;
-        //                            case SensorType.Throughput:
-        //                                if (sensor.Name.ToUpper().Contains("UPLOAD"))
-        //                                {
-        //                                    NetworkModel.Model.NetworkThroughput4UploadSpeed = sensor.Value ?? 0;
-        //                                }
-        //                                else if (sensor.Name.ToUpper().Contains("DOWNLOAD"))
-        //                                {
-        //                                    NetworkModel.Model.NetworkThroughput4DownloadSpeed = sensor.Value ?? 0;
-        //                                    DownSpeedList.Add(NetworkModel.Model.NetworkThroughput4DownloadSpeed);
-        //                                }
-
-        //                                break;
-        //                        }
-        //                    }
-
-        //                    double dSpeed;
-        //                    double uSpeed;
-        //                    string unitD;
-        //                    string unitU;
-        //                    if (NetworkModel.Model.NetworkThroughput4DownloadSpeed > NetworkModel.Model.NetworkThroughput4UploadSpeed)
-        //                    {
-        //                        dSpeed = FormatBytes(
-        //                            NetworkModel.Model.NetworkThroughput4DownloadSpeed,
-        //                            out unitD,
-        //                            out var maxUnitIndex);
-        //                        uSpeed = FormatBytes(
-        //                            NetworkModel.Model.NetworkThroughput4UploadSpeed,
-        //                            out unitU,
-        //                            out _,
-        //                            maxUnitIndex);
-        //                    }
-        //                    else
-        //                    {
-        //                        uSpeed = FormatBytes(
-        //                            NetworkModel.Model.NetworkThroughput4UploadSpeed,
-        //                            out unitU,
-        //                            out var maxUnitIndex);
-        //                        dSpeed = FormatBytes(
-        //                            NetworkModel.Model.NetworkThroughput4DownloadSpeed,
-        //                            out unitD,
-        //                            out _,
-        //                            maxUnitIndex);
-        //                    }
-
-        //                    Data.Index = networkIndex++ == 0 ? "" : $"{networkIndex}";
-        //                    Data.Name = $"{NetworkModel.Model.NetworkName}";
-        //                    Data.Item1 = $"发送: {uSpeed}";   // $"发送: {uSpeed} {unitU}"
-        //                    Data.Item2 = $"接收: {dSpeed} {unitD}";
-        //                    Data.PointData = Convert.ToInt32(dSpeed);
-        //                    Data.MaxPointData = 100;
-        //                    Data.FillBrush = NetworkModel.Model.FillBrush;
-        //                    Data.StrokeBrush = NetworkModel.Model.StrokeBrush;
-        //                }
-
-        //                break;
-        //        }
-
-        //        if (!string.IsNullOrWhiteSpace(Data.Name))
-        //            AddOrSet(Data);
-        //    }
-
-        //    DataModel.Observable();
-        //}
 
         private static string GHzConvert(float value, out string unit)
         {
@@ -665,58 +438,5 @@ namespace SystemMonitor.ViewModels
                 _ => 1024
             };
         }
-
-        //public void AddOrSet(DisplayItems item)
-        //{
-        //    if (DataModel.Models.FirstOrDefault(m => m.Name == item.Name && m.Index == item.Index) is { } item1)
-        //    {
-        //        item1.Item1 = item.Item1;
-        //        item1.Item2 = item.Item2;
-        //        item1.Item3 = item.Item3;
-        //        item1.Item4 = item.Item4;
-        //        item1.Item5 = item.Item5;
-        //        item1.Item6 = item.Item6;
-        //        item1.Item7 = item.Item7;
-        //        item1.Item8 = item.Item8;
-
-        //        //for (var i = 0; i < MaxPointCount - 1; i++)
-        //        //{
-        //        item1.PointCollection.ChangePoints(Vector, 1);
-        //        //}
-
-        //        item1.PointCollection.Insert(1,
-        //            new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-        //        if (item1.PointCollection.Count > 61) item1.PointCollection.RemoveAt(item1.PointCollection.Count - 2);
-        //    }
-        //    else
-        //    {
-        //        var item2 = new DisplayItems
-        //        {
-        //            FillBrush = item.FillBrush,
-        //            StrokeBrush = item.StrokeBrush,
-        //            Index = item.Index,
-        //            Item1 = item.Item1,
-        //            Item2 = item.Item2,
-        //            Item3 = item.Item3,
-        //            Item4 = item.Item4,
-        //            Item5 = item.Item5,
-        //            Item6 = item.Item6,
-        //            Item7 = item.Item7,
-        //            Item8 = item.Item8,
-        //            Name = item.Name
-        //        };
-
-        //        item2.PointCollection.Add(new Point(0, 0));
-        //        for (var i = 0; i <= 60; i++)
-        //        {
-        //            item2.PointCollection.Add(new Point(i, 0));
-        //        }
-        //        item2.PointCollection.Add(new Point(60, 0));
-
-        //        item2.PointCollection.Insert(1,
-        //            new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-        //        DataModel.Models.Add(item2);
-        //    }
-        //}
     }
 }
