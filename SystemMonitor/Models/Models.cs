@@ -8,6 +8,7 @@ namespace SystemMonitor.Models
     public class DisplayItems : BindableBase
     {
         private Visibility _visibility = Visibility.Collapsed;
+        private Visibility _lineVisibility = Visibility.Visible;
         private string _name;
         private string _name2;
         private string _index;
@@ -23,12 +24,23 @@ namespace SystemMonitor.Models
         private int _maxPointData = 100;
         private Brush _strokeBrush;
         private Brush _fillBrush;
+        private Brush _background;
+        private Brush _foreground;
         private PointCollection _pointCollection = new();
+        private int _canvasHeight;
+        private int _dotDensity;
+        private int _canvasWidth;
 
         public Visibility Visibility
         {
             get => _visibility;
             set => SetProperty(ref _visibility, value);
+        }
+
+        public Visibility LineVisibility
+        {
+            get => _lineVisibility;
+            set => SetProperty(ref _lineVisibility, value);
         }
 
         public Identifier Identifier { get; set; }
@@ -123,10 +135,38 @@ namespace SystemMonitor.Models
             set => SetProperty(ref _fillBrush, value);
         }
 
+        public Brush Background
+        {
+            get => _background;
+            set => SetProperty(ref _background, value);
+        }
+
+        public Brush Foreground
+        {
+            get => _foreground;
+            set => SetProperty(ref _foreground, value);
+        }
+
         public PointCollection PointCollection
         {
             get => _pointCollection;
             set => SetProperty(ref _pointCollection, value);
+        }
+
+        public int CanvasHeight
+        {
+            get => _canvasHeight;
+            set => SetProperty(ref _canvasHeight, value);
+        }
+        public int DotDensity
+        {
+            get => _dotDensity < 50 ? 50 : _dotDensity;
+            set => SetProperty(ref _dotDensity, value);
+        }
+        public int CanvasWidth
+        {
+            get => _canvasWidth;
+            set => SetProperty(ref _canvasWidth, value);
         }
 
         public void ClearData()
@@ -136,16 +176,12 @@ namespace SystemMonitor.Models
             MaxPointData = 100;
         }
 
-        public DisplayItems()
+        public void CloneBrush()
         {
-            PointCollection.Add(new Point(0, 0));
-
-            for (var i = 0; i <= 60; i++)
-            {
-                PointCollection.Add(new Point(i, 0));
-            }
-
-            PointCollection.Add(new Point(60, 0));
+            Background = Background.Clone();
+            Foreground = Foreground.Clone();
+            FillBrush = FillBrush.Clone();
+            StrokeBrush = StrokeBrush.Clone();
         }
     }
 }

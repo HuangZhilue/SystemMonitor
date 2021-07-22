@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using SystemMonitor.Models;
 
 namespace SystemMonitor.Helper
 {
@@ -7,18 +8,30 @@ namespace SystemMonitor.Helper
     {
         public static void ChangePoints(this PointCollection pc, Vector v, int pointNum = 0)
         {
-            for (var i = pointNum; i < pc.Count - pointNum; i++)
+            for (int i = pointNum; i < pc.Count - pointNum; i++)
             {
                 pc[i] += v;
             }
         }
 
-        public static void SetYMax(this PointCollection pc, float yMax = 100f, float viewYHeight = 50)
+        public static void InsertAndMove(this PointCollection pc, DisplayItems item, int index = 1, int pointNum = 1)
         {
-            for (var i = 0; i < pc.Count; i++)
+            Point p = new(0, item.PointData * ((item.CanvasHeight - 5) / (double)item.MaxPointData));
+            pc.Insert(index, p);
+            pc.RemoveAt(item.DotDensity + 2);
+            Vector v = new(item.CanvasWidth / (double)item.DotDensity, 0);
+            for (int i = pointNum; i < pc.Count - pointNum; i++)
             {
-                var v = pc[i];
-                v.Y = ChangeYByPoint((float) v.Y, yMax, viewYHeight);
+                pc[i] += v;
+            }
+        }
+
+        public static void SetYMax(this PointCollection pc, DisplayItems item)
+        {
+            for (int i = 0; i < pc.Count; i++)
+            {
+                Point v = pc[i];
+                v.Y = ChangeYByPoint((float)v.Y, item.MaxPointData, item.CanvasHeight);
                 pc[i] += GetVectorBy2Point(pc[i], v);
             }
         }

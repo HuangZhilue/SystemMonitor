@@ -6,18 +6,19 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:views="clr-namespace:SystemMonitor.Views"
     Title="{Binding Title}"
-    Width="300"
+    Width="300" 
+    Height="{Binding WindowsHeight}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     AllowDrop="True"
     AllowsTransparency="True"
     Background="{x:Null}"
     Foreground="{x:Null}"
-    ResizeMode="CanResize"
+    ResizeMode="CanMinimize"
     Topmost="True"
     WindowState="Normal"
     WindowStyle="None">
-    <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Height="{Binding WindowsHeight}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="{Binding WindowsHeight}">
             <StackPanel
                 x:Name="stackPanel"
                 VerticalAlignment="Top"
@@ -38,7 +39,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Height="55" VerticalAlignment="Top" Visibility="{Binding Visibility}">
+                                        <Grid Height="{Binding CanvasHeight}" VerticalAlignment="Top" Visibility="{Binding Visibility}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="2" />
                                                 <RowDefinition Height="*" />
@@ -47,11 +48,12 @@
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="2" />
-                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition Width="{Binding CanvasWidth}" />
                                                 <ColumnDefinition Width="5" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel
+                                                Visibility="{Binding LineVisibility}"
                                                 x:Name="stackPanel"
                                                 Grid.Row="1"
                                                 Grid.RowSpan="2"
@@ -91,16 +93,16 @@
                                                     Padding="0,0,0,0"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
-                                                    Background="#7F000000"
+                                                    Background="{Binding Background}"
                                                     Content="{Binding Name}"
-                                                    Foreground="Lime" />
+                                                    Foreground="{Binding Foreground}" />
                                                 <Label
                                                     Padding="0,0,0,0"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
-                                                    Background="#7F000000"
+                                                    Background="{Binding Background}"
                                                     Content="{Binding Index}"
-                                                    Foreground="Lime" />
+                                                    Foreground="{Binding Foreground}" />
                                             </StackPanel>
                                             <StackPanel
                                                 Grid.Row="2"
@@ -114,27 +116,27 @@
                                                     VerticalAlignment="Stretch"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
-                                                    Background="#7F000000"
+                                                    Background="{Binding Background}"
                                                     Content="{Binding Item1}"
-                                                    Foreground="Lime" />
+                                                    Foreground="{Binding Foreground}" />
                                                 <Label
                                                     Padding="0,0,10,0"
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Stretch"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
-                                                    Background="#7F000000"
+                                                    Background="{Binding Background}"
                                                     Content="{Binding Item2}"
-                                                    Foreground="Lime" />
+                                                    Foreground="{Binding Foreground}" />
                                                 <Label
                                                     Padding="0,0,10,0"
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Stretch"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
-                                                    Background="#7F000000"
+                                                    Background="{Binding Background}"
                                                     Content="{Binding Item3}"
-                                                    Foreground="Lime" />
+                                                    Foreground="{Binding Foreground}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>

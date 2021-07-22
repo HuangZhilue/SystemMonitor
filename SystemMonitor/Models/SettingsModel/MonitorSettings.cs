@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using LibreHardwareMonitor.Hardware;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SystemMonitor.Helper;
 
 namespace SystemMonitor.Models.SettingsModel
 {
@@ -21,22 +23,25 @@ namespace SystemMonitor.Models.SettingsModel
         public bool IsMemoryEnabled { get; set; }
         public bool IsNetworkEnabled { get; set; }
         public bool IsStorageEnabled { get; set; }
-        public List<HardwareType> HardwareIndex { get; set; } = new();
+        public List<HardwareType> HardwareIndex { get; set; } = new();// { HardwareType.Cpu, HardwareType.Memory, HardwareType.Storage, HardwareType.Network, HardwareType.GpuAmd, HardwareType.GpuNvidia };
         public MonitorViewSettings MonitorViewSettings { get; set; }
+
+        private static IConfigurationRoot Configuration { get; } = Di.Configuration;
 
         public void Save2Json()
         {
-            var obj = JObject.Parse(JsonConvert.SerializeObject(this));
-            var filePath = AppContext.BaseDirectory + "AppSettings.json";
-            using var writer = new StreamWriter(filePath);
-            using var jsonWriter = new JsonTextWriter(writer) {Formatting = Formatting.Indented};
-            obj.WriteTo(jsonWriter);
+            JObject obj = JObject.Parse(JsonConvert.SerializeObject(this));
+            JObject cObj = Configuration.Configuration2JObject();
+            cObj["MonitorSettings"] = obj;
+            string filePath = AppContext.BaseDirectory + "AppSettings.json";
+            using StreamWriter writer = new(filePath);
+            using JsonTextWriter jsonWriter = new(writer) { Formatting = Formatting.Indented };
+            cObj.WriteTo(jsonWriter);
         }
     }
 
     public class MonitorViewSettings
     {
-        public int DotDensity { get; set; } = 60;
         public MonitorViewBase CpuView { get; set; }
         public MonitorViewBase MemoryView { get; set; }
         public MonitorViewBase StorageView { get; set; }
@@ -46,8 +51,13 @@ namespace SystemMonitor.Models.SettingsModel
 
     public class MonitorViewBase
     {
+        public int DotDensity { get; set; } = 60;
+        public int CanvasHeight { get; set; } = 55;
+        public int CanvasWidth { get; set; } = 60;
         public bool ShowLine { get; set; }
         public List<byte> StrokeBrush { get; set; } = new();
         public List<byte> FillBrush { get; set; } = new();
+        public List<byte> Background { get; set; } = new() { 125, 0, 0, 0 };
+        public List<byte> Foreground { get; set; } = new() { 255, 0, 255, 0 };
     }
 }

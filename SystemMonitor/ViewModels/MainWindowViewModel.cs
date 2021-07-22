@@ -18,6 +18,7 @@ namespace SystemMonitor.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         private string _title;
+        private int _windowsHeight;
 
         public string Title
         {
@@ -25,7 +26,11 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        //public DelegateCommand Click { get; }
+        public int WindowsHeight
+        {
+            get => _windowsHeight;
+            set => SetProperty(ref _windowsHeight, value);
+        }
 
         public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; set; } =
             new();
@@ -37,21 +42,17 @@ namespace SystemMonitor.ViewModels
 
         private static double Mod { get; } = 1024.0;
 
-        //private static DisplayItems Data { get; } = new();
-        private static Vector Vector { get; } = new(1, 0);
+        //private static Vector Vector { get; } = new(1, 0);
 
-        //private static LimitList<double> DownSpeedList { get; set; } = new();
         private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
         private static MonitorSettings MonitorSettings { get; } =
             ServicesProvider.GetRequiredService<MonitorSettings>();
 
-        //private static List<bool> IsFirstTimes { get; } = new() {true, true, true, true, true};
-
         public MainWindowViewModel()
         {
-            Title = "System Monitor";
-
+            Title = "== System Monitor ==";
+            WindowsHeight = 300;
             if (MonitorSettings.HardwareIndex.Count == 0)
             {
                 MonitorSettings.HardwareIndex.Add(HardwareType.Cpu);
@@ -81,12 +82,72 @@ namespace SystemMonitor.ViewModels
             HardwareServicesCallBack.StorageChangeEvent -= HardwareServicesCallBack_StorageChangeEvent;
             new Action(() =>
             {
+                WindowsHeight = 0;
                 Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent RunInBackground");
                 DisplayItemCollection.Clear();
                 MonitorSettings.HardwareIndex.ForEach(i =>
                 {
-                    var list2 = new TrulyObservableCollection<DisplayItems>();
-                    list.Where(l => l == i).ToList().ForEach(_ => list2.Add(new DisplayItems { Visibility = Visibility.Visible }));
+                    MonitorViewBase viewBase = i switch
+                    {
+                        HardwareType.Cpu => MonitorSettings.MonitorViewSettings.CpuView,
+                        HardwareType.Memory => MonitorSettings.MonitorViewSettings.MemoryView,
+                        HardwareType.GpuNvidia or HardwareType.GpuAmd => MonitorSettings.MonitorViewSettings.GpuView,
+                        HardwareType.Storage => MonitorSettings.MonitorViewSettings.StorageView,
+                        HardwareType.Network => MonitorSettings.MonitorViewSettings.NetworkView,
+                        _ => throw new Exception("Out of HardwareType")
+                    };
+
+                    SolidColorBrush strokeBrush = new(
+                        Color.FromArgb(
+                            viewBase.StrokeBrush[0],
+                            viewBase.StrokeBrush[1],
+                            viewBase.StrokeBrush[2],
+                            viewBase.StrokeBrush[3]));
+                    SolidColorBrush fillBrush = new(
+                        Color.FromArgb(
+                            viewBase.FillBrush[0],
+                            viewBase.FillBrush[1],
+                            viewBase.FillBrush[2],
+                            viewBase.FillBrush[3]));
+                    SolidColorBrush foreground = new(
+                        Color.FromArgb(
+                            viewBase.Foreground[0],
+                            viewBase.Foreground[1],
+                            viewBase.Foreground[2],
+                            viewBase.Foreground[3]));
+                    SolidColorBrush background = new(
+                        Color.FromArgb(
+                            viewBase.Background[0],
+                            viewBase.Background[1],
+                            viewBase.Background[2],
+                            viewBase.Background[3]));
+
+                    TrulyObservableCollection<DisplayItems> list2 = new();
+                    list.Where(l => l == i).ToList()
+                    .ForEach(_ =>
+                    {
+                        DisplayItems item = new()
+                        {
+                            Visibility = Visibility.Visible,
+                            LineVisibility = viewBase.ShowLine ? Visibility.Visible : Visibility.Collapsed,
+                            DotDensity = viewBase.DotDensity,
+                            StrokeBrush = strokeBrush,
+                            FillBrush = fillBrush,
+                            Foreground = foreground,
+                            Background = background,
+                            CanvasHeight = viewBase.CanvasHeight,
+                            CanvasWidth = viewBase.CanvasWidth
+                        };
+
+                        item.PointCollection.Add(new Point(0, 0));
+                        for (int i = 0; i <= viewBase.DotDensity; i++)
+                        {
+                            item.PointCollection.Add(new Point(i, 0));
+                        }
+                        item.PointCollection.Add(new Point(viewBase.DotDensity, 0));
+
+                        list2.Add(item);
+                    });
                     //if (list2.Count > 0) DisplayItemCollection.Add(list2);
                     //else
                     DisplayItemCollection.Add(list2);
@@ -100,6 +161,9 @@ namespace SystemMonitor.ViewModels
                 //    MonitorSettings.Save2Json();
                 //}
                 JobManager.Start();
+                DisplayItemCollection.ToList().ForEach(
+                        d => d.ToList().ForEach(
+                            i => WindowsHeight += i.CanvasHeight + 5));
             }).RunInBackground();
 
             HardwareServicesCallBack.CpuChangeEvent += HardwareServicesCallBack_CpuChangeEvent;
@@ -114,7 +178,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Cpu);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Cpu);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > cpu.Index &&
                     DisplayItemCollection[index1][cpu.Index] is { } item)
@@ -128,21 +192,8 @@ namespace SystemMonitor.ViewModels
                         ? ""
                         : $"{Convert.ToInt32(cpu.CpuTemperatures)}℃";
                     item.PointData = Convert.ToInt32(cpu.CpuLoad);
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.CpuView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.CpuView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.CpuView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.CpuView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -155,7 +206,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.GpuAmd);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.GpuAmd);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > gpu.Index &&
                     DisplayItemCollection[index1][gpu.Index] is { } item)
@@ -168,21 +219,8 @@ namespace SystemMonitor.ViewModels
                         ? ""
                         : $"{Convert.ToInt32(gpu.GpuTemperatures)}℃";
                     item.PointData = Convert.ToInt32(gpu.GpuLoad);
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -195,7 +233,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.GpuNvidia);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.GpuNvidia);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > gpu.Index &&
                     DisplayItemCollection[index1][gpu.Index] is { } item)
@@ -208,21 +246,8 @@ namespace SystemMonitor.ViewModels
                         ? ""
                         : $"{Convert.ToInt32(gpu.GpuTemperatures)}℃";
                     item.PointData = Convert.ToInt32(gpu.GpuLoad);
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -235,7 +260,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Memory);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Memory);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > memory.Index &&
                     DisplayItemCollection[index1][memory.Index] is { } item)
@@ -246,21 +271,8 @@ namespace SystemMonitor.ViewModels
                     item.Item1 = $"{memory.MemoryUsedDisplay}";
                     item.Item2 = $"{Convert.ToInt32(memory.MemoryLoad)}%";
                     item.PointData = Convert.ToInt32(memory.MemoryLoad);
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.MemoryView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.MemoryView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.MemoryView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.MemoryView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -273,7 +285,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Network);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Network);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > network.Index &&
                     DisplayItemCollection[index1][network.Index] is { } item)
@@ -314,21 +326,8 @@ namespace SystemMonitor.ViewModels
                     item.Item2 = $"接收: {dSpeed} {unitD}";
                     item.PointData = Convert.ToInt32(dSpeed);
                     item.MaxPointData = 100;
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.NetworkView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.NetworkView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.NetworkView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.NetworkView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -341,7 +340,7 @@ namespace SystemMonitor.ViewModels
         {
             new Action(() =>
             {
-                var index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Storage);
+                int index1 = MonitorSettings.HardwareIndex.IndexOf(HardwareType.Storage);
                 if (DisplayItemCollection.Count > index1 &&
                     DisplayItemCollection[index1].Count > disk.Index &&
                     DisplayItemCollection[index1][disk.Index] is { } item)
@@ -351,21 +350,8 @@ namespace SystemMonitor.ViewModels
                     item.Identifier = disk.Identifier;
                     item.Item1 = $"{Convert.ToInt32(disk.DiskLoad4TotalActivity)}%";
                     item.PointData = Convert.ToInt32(disk.DiskLoad4TotalActivity);
-                    item.PointCollection.Insert(1,
-                        new Point(0, ChangeNumToPoint(item.PointData, item.MaxPointData)));
-                    item.StrokeBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush[0],
-                            MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush[1],
-                            MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush[2],
-                            MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush[3]));
-                    item.FillBrush = new SolidColorBrush(
-                        Color.FromArgb(
-                            MonitorSettings.MonitorViewSettings.StorageView.FillBrush[0],
-                            MonitorSettings.MonitorViewSettings.StorageView.FillBrush[1],
-                            MonitorSettings.MonitorViewSettings.StorageView.FillBrush[2],
-                            MonitorSettings.MonitorViewSettings.StorageView.FillBrush[3]));
-                    item.PointCollection.ChangePoints(Vector, 1);
+                    item.CloneBrush();
+                    item.PointCollection.InsertAndMove(item);
                 }
                 else
                 {
@@ -376,7 +362,7 @@ namespace SystemMonitor.ViewModels
 
         private static string GHzConvert(float value, out string unit)
         {
-            var date = value / 1024;
+            float date = value / 1024;
             switch (date)
             {
                 case >= 1:
@@ -391,10 +377,10 @@ namespace SystemMonitor.ViewModels
             }
         }
 
-        public static double FormatBytes(double size, out string unit, out int maxUnitIndex, int maxUnit = -1)
+        private static double FormatBytes(double size, out string unit, out int maxUnitIndex, int maxUnit = -1)
         {
             size *= 8d;
-            var i = 0;
+            int i = 0;
             if (maxUnit < 0)
             {
                 while (size >= Mod)
@@ -417,10 +403,10 @@ namespace SystemMonitor.ViewModels
             return Math.Round(size, 2);
         }
 
-        public double ChangeNumToPoint(double num, double maxNum)
-        {
-            return num * (50 / maxNum);
-        }
+        //public double ChangeNumToPoint(double num, double maxNum)
+        //{
+        //    return num * (50 / maxNum);
+        //}
 
         public int GetMaxPoint(double num)
         {

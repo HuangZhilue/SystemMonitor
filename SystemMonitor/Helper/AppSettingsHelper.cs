@@ -1,38 +1,37 @@
-﻿using System;
-using System.IO;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace SystemMonitor.Helper
 {
     public static class AppSettingsHelper
     {
-        public static void Save2Json(this IConfigurationRoot configuration)
+        public static JObject Configuration2JObject(this IConfigurationRoot configuration)
         {
-            var obj = new JObject();
-            foreach (var child in configuration.GetChildren())
+            JObject obj = new();
+
+            foreach (IConfigurationSection child in configuration.GetChildren())
             {
                 obj.Add(child.Key, Serialize(child));
             }
 
-            var filePath = AppContext.BaseDirectory + "AppSettings.json";
-
-            using var writer = new StreamWriter(filePath);
-            using var jsonWriter = new JsonTextWriter(writer) { Formatting = Formatting.Indented };
-            obj.WriteTo(jsonWriter);
+            return obj;
         }
 
         private static JToken Serialize(IConfiguration config)
         {
-            var obj = new JObject();
-            foreach (var child in config.GetChildren())
+            JObject obj = new();
+            foreach (IConfigurationSection child in config.GetChildren())
             {
+                Debug.WriteLine(child.Key);
                 obj.Add(child.Key, Serialize(child));
             }
 
             if (!obj.HasValues && config is IConfigurationSection section)
+            {
+                Debug.WriteLine(section.Value);
                 return new JValue(section.Value);
+            }
 
             return obj;
         }

@@ -24,14 +24,10 @@ namespace SystemMonitor.Helper
                 .AddJsonFile("AppSettings.json", true, true)
                 .Build();
 
-            var monitorSettings = new MonitorSettings();
-
-            Configuration.Bind(nameof(MonitorSettings), monitorSettings);
-
             ServiceProvider = new ServiceCollection()
                 .AddSingleton(typeof(IConfigurationRoot), Configuration)
                 .AddTransient<HardwareServices>()
-                .AddSingleton(monitorSettings)
+                .AddSingleton(Configuration.GetSection("MonitorSettings").Get<MonitorSettings>())
                 .BuildServiceProvider();
         }
     }
