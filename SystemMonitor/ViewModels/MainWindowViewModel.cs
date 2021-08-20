@@ -18,18 +18,11 @@ namespace SystemMonitor.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         private string _title;
-        private int _windowsHeight;
 
         public string Title
         {
             get => _title;
             set => SetProperty(ref _title, value);
-        }
-
-        public int WindowsHeight
-        {
-            get => _windowsHeight;
-            set => SetProperty(ref _windowsHeight, value);
         }
 
         public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; set; } =
@@ -43,6 +36,7 @@ namespace SystemMonitor.ViewModels
         private static double Mod { get; } = 1024.0;
 
         //private static Vector Vector { get; } = new(1, 0);
+        private static bool NeedResetHeight { get; set; }
 
         private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
@@ -51,8 +45,7 @@ namespace SystemMonitor.ViewModels
 
         public MainWindowViewModel()
         {
-            Title = "== System Monitor ==";
-            WindowsHeight = 300;
+            Title = "System Monitor";
             if (MonitorSettings.HardwareIndex.Count == 0)
             {
                 MonitorSettings.HardwareIndex.Add(HardwareType.Cpu);
@@ -72,6 +65,7 @@ namespace SystemMonitor.ViewModels
 
         private void HardwareServicesCallBackOnHardwareChangeEvent(List<HardwareType> list)
         {
+            NeedResetHeight = true;
             Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent");
             JobManager.Stop();
             HardwareServicesCallBack.CpuChangeEvent -= HardwareServicesCallBack_CpuChangeEvent;
@@ -82,7 +76,6 @@ namespace SystemMonitor.ViewModels
             HardwareServicesCallBack.StorageChangeEvent -= HardwareServicesCallBack_StorageChangeEvent;
             new Action(() =>
             {
-                WindowsHeight = 0;
                 Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent RunInBackground");
                 DisplayItemCollection.Clear();
                 MonitorSettings.HardwareIndex.ForEach(i =>
@@ -148,8 +141,6 @@ namespace SystemMonitor.ViewModels
 
                         list2.Add(item);
                     });
-                    //if (list2.Count > 0) DisplayItemCollection.Add(list2);
-                    //else
                     DisplayItemCollection.Add(list2);
                 });
                 //if (DisplayItemCollection.Count != MonitorSettings.HardwareIndex.Count)
@@ -160,10 +151,9 @@ namespace SystemMonitor.ViewModels
                 //    MonitorSettings.HardwareIndex.AddRange(l1);
                 //    MonitorSettings.Save2Json();
                 //}
+
+                NeedResetHeight = true;
                 JobManager.Start();
-                DisplayItemCollection.ToList().ForEach(
-                        d => d.ToList().ForEach(
-                            i => WindowsHeight += i.CanvasHeight + 5));
             }).RunInBackground();
 
             HardwareServicesCallBack.CpuChangeEvent += HardwareServicesCallBack_CpuChangeEvent;
@@ -402,11 +392,6 @@ namespace SystemMonitor.ViewModels
             maxUnitIndex = i;
             return Math.Round(size, 2);
         }
-
-        //public double ChangeNumToPoint(double num, double maxNum)
-        //{
-        //    return num * (50 / maxNum);
-        //}
 
         public int GetMaxPoint(double num)
         {

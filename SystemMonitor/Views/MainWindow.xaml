@@ -6,8 +6,7 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:views="clr-namespace:SystemMonitor.Views"
     Title="{Binding Title}"
-    Width="300" 
-    Height="{Binding WindowsHeight}"
+    Width="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
     AllowDrop="True"
     AllowsTransparency="True"
@@ -17,13 +16,15 @@
     Topmost="True"
     WindowState="Normal"
     WindowStyle="None">
-    <Grid Height="{Binding WindowsHeight}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="{Binding WindowsHeight}">
+    <!--
+    Height="{Binding WindowsHeight}"<Grid Height="{Binding WindowsHeight}">-->
+    <Grid Height="{Binding ActualHeight, ElementName=stackPanel, Mode=OneWay}">
+        <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Height="{Binding WindowsHeight}">-->
             <StackPanel
                 x:Name="stackPanel"
                 VerticalAlignment="Top"
                 MouseDown="Window_MouseDown">
-                <ItemsControl x:Name="ModelStack" ItemsSource="{Binding DisplayItemCollection}">
+                <ItemsControl x:Name="ModelStack1" ItemsSource="{Binding DisplayItemCollection}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Vertical" />
@@ -31,7 +32,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ItemsControl x:Name="ModelStack" ItemsSource="{Binding}">
+                            <ItemsControl x:Name="ModelStack2" ItemsSource="{Binding}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Vertical" />
@@ -146,6 +147,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
-        </ScrollViewer>
+        <!--</ScrollViewer>-->
     </Grid>
 </Window>
