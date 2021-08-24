@@ -48,9 +48,9 @@
                         Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
                         Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
                         Fill="#3FFF0000"
-                        Points="0,0 0,10 10,10 20,0 30,20 40,10 50,30 60,10 60,0"
+                        Points="0,0 0,10 10,10 20,0 30,80 40,10 50,30 60,10 60,0"
                         Stroke="Red"
-                        StrokeThickness="0.4" />
+                        StrokeThickness="0.4" FillRule="EvenOdd" Stretch="Fill" StrokeStartLineCap="Flat" />
                                 <Rectangle
                         Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
                         Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"

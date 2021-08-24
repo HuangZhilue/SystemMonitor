@@ -18,6 +18,7 @@ namespace SystemMonitor.Models.SettingsModel
             get => _loopInterval;
             set => _loopInterval = value < 100 ? 100 : value;
         }
+        public int WindowsWidth { get; set; } = 250;
         public bool IsCpuEnabled { get; set; }
         public bool IsGpuEnabled { get; set; }
         public bool IsMemoryEnabled { get; set; }

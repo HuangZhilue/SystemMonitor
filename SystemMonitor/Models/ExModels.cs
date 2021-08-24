@@ -63,11 +63,7 @@ namespace SystemMonitor.Models
         public void Add(T item)
         {
             List.Add(item);
-            if (List.Count > CountLimit)
-            {
-                var need2Cut = List.Count - CountLimit;
-                List = List.TakeLast(need2Cut).ToList();
-            }
+            List = List.TakeLast(CountLimit).ToList();
         }
 
         #region 默认实现方法

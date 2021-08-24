@@ -25,18 +25,18 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _title, value);
         }
 
+        private int _windowsWidth;
+
+        public int WindowsWidth
+        {
+            get => _windowsWidth;
+            set => SetProperty(ref _windowsWidth, value);
+        }
+
         public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; set; } =
             new();
 
-        /// <summary>
-        /// 0"", 1"Kbps", 2"Mbps", 3"Gbps", 4"Tbps", 5"Pbps"
-        /// </summary>
-        private static string[] Units { get; } = { "", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps" };
-
-        private static double Mod { get; } = 1024.0;
-
-        //private static Vector Vector { get; } = new(1, 0);
-        private static bool NeedResetHeight { get; set; }
+        private static LimitList<float> NetworkSpeedList { get; } = new(60);
 
         private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
@@ -46,6 +46,7 @@ namespace SystemMonitor.ViewModels
         public MainWindowViewModel()
         {
             Title = "System Monitor";
+            WindowsWidth = MonitorSettings.WindowsWidth;
             if (MonitorSettings.HardwareIndex.Count == 0)
             {
                 MonitorSettings.HardwareIndex.Add(HardwareType.Cpu);
@@ -65,7 +66,6 @@ namespace SystemMonitor.ViewModels
 
         private void HardwareServicesCallBackOnHardwareChangeEvent(List<HardwareType> list)
         {
-            NeedResetHeight = true;
             Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent");
             JobManager.Stop();
             HardwareServicesCallBack.CpuChangeEvent -= HardwareServicesCallBack_CpuChangeEvent;
@@ -152,7 +152,6 @@ namespace SystemMonitor.ViewModels
                 //    MonitorSettings.Save2Json();
                 //}
 
-                NeedResetHeight = true;
                 JobManager.Start();
             }).RunInBackground();
 
@@ -177,7 +176,7 @@ namespace SystemMonitor.ViewModels
                     item.Index = cpu.IndexString;
                     item.Identifier = cpu.Identifier;
                     item.Item1 = $"{Convert.ToInt32(cpu.CpuLoad)}%";
-                    item.Item2 = $"{GHzConvert(cpu.CpuClock, out var unit)}{unit}";
+                    item.Item2 = $"{CommonHelper.GHzConvert(cpu.CpuClock, out var unit)}{unit}";
                     item.Item3 = Math.Abs(cpu.CpuTemperatures - -999) <= 0
                         ? ""
                         : $"{Convert.ToInt32(cpu.CpuTemperatures)}℃";
@@ -287,11 +286,11 @@ namespace SystemMonitor.ViewModels
                     if (network.NetworkThroughput4DownloadSpeed >
                         network.NetworkThroughput4UploadSpeed)
                     {
-                        dSpeed = FormatBytes(
+                        dSpeed = CommonHelper.FormatBytes(
                             network.NetworkThroughput4DownloadSpeed,
                             out unitD,
                             out var maxUnitIndex);
-                        uSpeed = FormatBytes(
+                        uSpeed = CommonHelper.FormatBytes(
                             network.NetworkThroughput4UploadSpeed,
                             out unitU,
                             out _,
@@ -299,25 +298,26 @@ namespace SystemMonitor.ViewModels
                     }
                     else
                     {
-                        uSpeed = FormatBytes(
+                        uSpeed = CommonHelper.FormatBytes(
                             network.NetworkThroughput4UploadSpeed,
                             out unitU,
                             out var maxUnitIndex);
-                        dSpeed = FormatBytes(
+                        dSpeed = CommonHelper.FormatBytes(
                             network.NetworkThroughput4DownloadSpeed,
                             out unitD,
                             out _,
                             maxUnitIndex);
                     }
 
+                    NetworkSpeedList.Add(network.NetworkThroughput4DownloadSpeed);
                     item.Index = network.IndexString;
                     item.Name = $"{network.NetworkName}";
                     item.Item1 = $"发送: {uSpeed}"; // $"发送: {uSpeed} {unitU}"
                     item.Item2 = $"接收: {dSpeed} {unitD}";
-                    item.PointData = Convert.ToInt32(dSpeed);
-                    item.MaxPointData = 100;
+                    item.PointData = network.NetworkThroughput4DownloadSpeed;// Convert.ToInt32(dSpeed);
                     item.CloneBrush();
-                    item.PointCollection.InsertAndMove(item);
+                    item.PointCollection.InsertAndMove(item, NetworkSpeedList);
+                    //item.PointCollection.SetYMax(item, NetworkSpeedList);
                 }
                 else
                 {
@@ -350,64 +350,21 @@ namespace SystemMonitor.ViewModels
             }).RunInBackground();
         }
 
-        private static string GHzConvert(float value, out string unit)
-        {
-            float date = value / 1024;
-            switch (date)
-            {
-                case >= 1:
-                    unit = "GHz";
-                    return date.ToString("0.00");
-                case < 1:
-                    unit = "MHz";
-                    return (date * 1024).ToString("0");
-                default:
-                    unit = "Hz";
-                    return (date * 1024).ToString("0");
-            }
-        }
-
-        private static double FormatBytes(double size, out string unit, out int maxUnitIndex, int maxUnit = -1)
-        {
-            size *= 8d;
-            int i = 0;
-            if (maxUnit < 0)
-            {
-                while (size >= Mod)
-                {
-                    size /= Mod;
-                    i++;
-                }
-            }
-            else
-            {
-                while (size >= Mod || i < maxUnit)
-                {
-                    size /= Mod;
-                    i++;
-                }
-            }
-
-            unit = Units[i];
-            maxUnitIndex = i;
-            return Math.Round(size, 2);
-        }
-
-        public int GetMaxPoint(double num)
-        {
-            return num switch
-            {
-                <= 5 => 5,
-                <= 10 => 10,
-                <= 20 => 20,
-                <= 50 => 50,
-                <= 100 => 100,
-                <= 200 => 200,
-                <= 500 => 500,
-                <= 800 => 800,
-                <= 1024 => 1024,
-                _ => 1024
-            };
-        }
+        //public int GetMaxPoint(double num)
+        //{
+        //    return num switch
+        //    {
+        //        <= 5 => 5,
+        //        <= 10 => 10,
+        //        <= 20 => 20,
+        //        <= 50 => 50,
+        //        <= 100 => 100,
+        //        <= 200 => 200,
+        //        <= 500 => 500,
+        //        <= 800 => 800,
+        //        <= 1024 => 1024,
+        //        _ => 1024
+        //    };
+        //}
     }
 }

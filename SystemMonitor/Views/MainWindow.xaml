@@ -6,7 +6,6 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:views="clr-namespace:SystemMonitor.Views"
     Title="{Binding Title}"
-    Width="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
     AllowDrop="True"
     AllowsTransparency="True"
@@ -15,11 +14,14 @@
     ResizeMode="CanMinimize"
     Topmost="True"
     WindowState="Normal"
-    WindowStyle="None">
+    WindowStyle="None"
+    SizeToContent="WidthAndHeight">
     <!--
-    Height="{Binding WindowsHeight}"<Grid Height="{Binding WindowsHeight}">-->
-    <Grid Height="{Binding ActualHeight, ElementName=stackPanel, Mode=OneWay}">
-        <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Height="{Binding WindowsHeight}">-->
+    Height="{Binding ActualHeight, ElementName=stackPanel}"
+    Width="{Binding ActualWidth, ElementName=stackPanel}"-->
+    <Grid Height="{Binding ActualHeight, ElementName=stackPanel}"
+          Width="{Binding WindowsWidth}">
+        <!--<ScrollViewer VerticalScrollBarVisibility="Auto">-->
             <StackPanel
                 x:Name="stackPanel"
                 VerticalAlignment="Top"
@@ -27,7 +29,7 @@
                 <ItemsControl x:Name="ModelStack1" ItemsSource="{Binding DisplayItemCollection}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" />
+                        <StackPanel Orientation="Vertical" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -35,12 +37,12 @@
                             <ItemsControl x:Name="ModelStack2" ItemsSource="{Binding}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Vertical" />
+                                    <StackPanel Orientation="Vertical" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Height="{Binding CanvasHeight}" VerticalAlignment="Top" Visibility="{Binding Visibility}">
+                                    <Grid x:Name="grid1" Height="{Binding CanvasHeight}" VerticalAlignment="Top" Visibility="{Binding Visibility}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="2" />
                                                 <RowDefinition Height="*" />
@@ -90,14 +92,14 @@
                                                 Height="20"
                                                 VerticalAlignment="Center"
                                                 Orientation="Horizontal">
-                                                <Label
+                                            <Label
                                                     Padding="0,0,0,0"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
                                                     Background="{Binding Background}"
                                                     Content="{Binding Name}"
-                                                    Foreground="{Binding Foreground}" />
-                                                <Label
+                                                    Foreground="{Binding Foreground}"/>
+                                            <Label
                                                     Padding="0,0,0,0"
                                                     HorizontalContentAlignment="Left"
                                                     VerticalContentAlignment="Center"
