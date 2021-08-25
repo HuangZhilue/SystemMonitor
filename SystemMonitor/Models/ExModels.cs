@@ -110,6 +110,7 @@ namespace SystemMonitor.Models
         public void Insert(int index, T item)
         {
             List.Insert(index, item);
+            List = List.Take(CountLimit).ToList();
         }
 
         public void RemoveAt(int index)

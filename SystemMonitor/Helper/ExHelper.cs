@@ -50,8 +50,7 @@ namespace SystemMonitor.Helper
             {
                 // 0.5 = pointData / MaxY * H
                 Point p = pc[i];
-                float pYNum = i - pointNum < limitList.Count ? limitList.Reverse().ToList()[i - pointNum] : 0f;
-                p.Y = pYNum / LastMaxY * item.CanvasHeight;
+                p.Y = limitList[i - pointNum] / LastMaxY * item.CanvasHeight;
                 p.X += item.CanvasWidth / (double)item.DotDensity;
                 pc[i] = p;
             }

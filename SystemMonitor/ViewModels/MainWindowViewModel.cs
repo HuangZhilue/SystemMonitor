@@ -46,6 +46,12 @@ namespace SystemMonitor.ViewModels
         public MainWindowViewModel()
         {
             Title = "System Monitor";
+            NetworkSpeedList.CountLimit = MonitorSettings.MonitorViewSettings.NetworkView.DotDensity + 5;
+            for (int i = 0; i < NetworkSpeedList.CountLimit; i++)
+            {
+                NetworkSpeedList.Add(0);
+            }
+
             WindowsWidth = MonitorSettings.WindowsWidth;
             if (MonitorSettings.HardwareIndex.Count == 0)
             {
@@ -309,7 +315,7 @@ namespace SystemMonitor.ViewModels
                             maxUnitIndex);
                     }
 
-                    NetworkSpeedList.Add(network.NetworkThroughput4DownloadSpeed);
+                    NetworkSpeedList.Insert(0, network.NetworkThroughput4DownloadSpeed);
                     item.Index = network.IndexString;
                     item.Name = $"{network.NetworkName}";
                     item.Item1 = $"发送: {uSpeed}"; // $"发送: {uSpeed} {unitU}"
@@ -317,7 +323,6 @@ namespace SystemMonitor.ViewModels
                     item.PointData = network.NetworkThroughput4DownloadSpeed;// Convert.ToInt32(dSpeed);
                     item.CloneBrush();
                     item.PointCollection.InsertAndMove(item, NetworkSpeedList);
-                    //item.PointCollection.SetYMax(item, NetworkSpeedList);
                 }
                 else
                 {
@@ -349,22 +354,5 @@ namespace SystemMonitor.ViewModels
                 }
             }).RunInBackground();
         }
-
-        //public int GetMaxPoint(double num)
-        //{
-        //    return num switch
-        //    {
-        //        <= 5 => 5,
-        //        <= 10 => 10,
-        //        <= 20 => 20,
-        //        <= 50 => 50,
-        //        <= 100 => 100,
-        //        <= 200 => 200,
-        //        <= 500 => 500,
-        //        <= 800 => 800,
-        //        <= 1024 => 1024,
-        //        _ => 1024
-        //    };
-        //}
     }
 }
