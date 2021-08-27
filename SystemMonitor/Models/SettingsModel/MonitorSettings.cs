@@ -24,10 +24,16 @@ namespace SystemMonitor.Models.SettingsModel
         public bool IsMemoryEnabled { get; set; }
         public bool IsNetworkEnabled { get; set; }
         public bool IsStorageEnabled { get; set; }
-        public List<HardwareType> HardwareIndex { get; set; } = new();// { HardwareType.Cpu, HardwareType.Memory, HardwareType.Storage, HardwareType.Network, HardwareType.GpuAmd, HardwareType.GpuNvidia };
+        public List<HardwareType> HardwareIndex { get; set; } = new(); // { HardwareType.Cpu, HardwareType.Memory, HardwareType.Storage, HardwareType.Network, HardwareType.GpuAmd, HardwareType.GpuNvidia };
         public MonitorViewSettings MonitorViewSettings { get; set; }
 
-        private static IConfigurationRoot Configuration { get; } = Di.Configuration;
+        [JsonIgnore]
+        public IConfigurationRoot Configuration { private get; set; } // = Di.Configuration;
+
+        //public MonitorSettings(IConfigurationRoot configuration)
+        //{
+        //    Configuration = configuration;
+        //}
 
         public void Save2Json()
         {
@@ -56,6 +62,7 @@ namespace SystemMonitor.Models.SettingsModel
         public int CanvasHeight { get; set; } = 55;
         public int CanvasWidth { get; set; } = 60;
         public bool ShowLine { get; set; }
+        public double FontSize { get; set; } = 12d;
         public List<byte> StrokeBrush { get; set; } = new();
         public List<byte> FillBrush { get; set; } = new();
         public List<byte> Background { get; set; } = new() { 125, 0, 0, 0 };

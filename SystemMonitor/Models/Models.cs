@@ -20,6 +20,7 @@ namespace SystemMonitor.Models
         private string _item6;
         private string _item7;
         private string _item8;
+        private double _item8FontSize;
         private float _pointData;
         private int _maxPointData = 100;
         private Brush _strokeBrush;
@@ -109,6 +110,12 @@ namespace SystemMonitor.Models
         {
             get => _item8;
             set => SetProperty(ref _item8, value);
+        }
+
+        public double Item8FontSize
+        {
+            get => _item8FontSize;
+            set => SetProperty(ref _item8FontSize, value);
         }
 
         public float PointData

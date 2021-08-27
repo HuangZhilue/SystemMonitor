@@ -30,74 +30,103 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel
-                x:Name="stackPanel1"
-                Grid.Row="1"
-                Grid.RowSpan="2"
-                Grid.Column="1"
-                Orientation="Horizontal">
+                            x:Name="stackPanel1"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            Orientation="Horizontal">
                             <StackPanel.LayoutTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="-1" ScaleY="-1" />
                                 </TransformGroup>
                             </StackPanel.LayoutTransform>
                             <Canvas
-                    x:Name="canvas1"
-                    Width="{Binding ActualWidth, ElementName=stackPanel1, Mode=OneWay}"
-                    Height="{Binding ActualHeight, ElementName=stackPanel1, Mode=OneWay}">
+                                x:Name="canvas1"
+                                Width="{Binding ActualWidth, ElementName=stackPanel1, Mode=OneWay}"
+                                Height="{Binding ActualHeight, ElementName=stackPanel1, Mode=OneWay}">
                                 <Polyline
-                        Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
-                        Fill="#3FFF0000"
-                        Points="0,0 0,10 10,10 20,0 30,80 40,10 50,30 60,10 60,0"
-                        Stroke="Red"
-                        StrokeThickness="0.4" FillRule="EvenOdd" Stretch="Fill" StrokeStartLineCap="Flat" />
+                                    Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
+                                    Fill="#3FFF0000"
+                                    Points="0,0 0,10 10,10 20,0 30,80 40,10 50,30 60,10 60,0"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" FillRule="EvenOdd" Stretch="Fill" StrokeStartLineCap="Flat" />
                                 <Rectangle
-                        Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
-                        Stroke="Red"
-                        StrokeThickness="0.4" />
+                                    Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" />
+                                <Grid
+                                    x:Name="grid"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
+                                    Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="2*"/>
+                                        <RowDefinition Height="8*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.LayoutTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+                                            <SkewTransform/>
+                                            <RotateTransform/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </Grid.LayoutTransform>
+                                    <Label x:Name="label" Content="100Kbps" Foreground="Lime" RenderTransformOrigin="0.5,0.5" FontSize="6" Padding="0,0,0,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
+                                    <Line x:Name="line"
+                                          Fill="Red"
+                                          Stroke="Red"
+                                          X2="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
+                                          Y1="{Binding ActualHeight, ElementName=label, Mode=OneWay}"
+                                          Y2="{Binding ActualHeight, ElementName=label, Mode=OneWay}"
+                                          StrokeDashArray="2"
+                                          StrokeDashCap="Round"
+                                          StrokeThickness="0.5"
+                                          VerticalAlignment="Top"/>
+                                </Grid>
                             </Canvas>
                         </StackPanel>
                         <StackPanel
-                Grid.Row="1"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Name}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Name}" />
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Index}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Index}" />
                         </StackPanel>
                         <StackPanel
-                Grid.Row="2"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item1}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item1}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item2}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item2}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item3}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item3}" />
                         </StackPanel>
                     </Grid>
                     <Grid Height="55" VerticalAlignment="Top">
@@ -114,74 +143,74 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel
-                x:Name="stackPanel2"
-                Grid.Row="1"
-                Grid.RowSpan="2"
-                Grid.Column="1"
-                Orientation="Horizontal">
+                            x:Name="stackPanel2"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            Orientation="Horizontal">
                             <StackPanel.LayoutTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="-1" ScaleY="-1" />
                                 </TransformGroup>
                             </StackPanel.LayoutTransform>
                             <Canvas
-                    x:Name="canvas2"
-                    Width="{Binding ActualWidth, ElementName=stackPanel2, Mode=OneWay}"
-                    Height="{Binding ActualHeight, ElementName=stackPanel2, Mode=OneWay}">
+                                x:Name="canvas2"
+                                Width="{Binding ActualWidth, ElementName=stackPanel2, Mode=OneWay}"
+                                Height="{Binding ActualHeight, ElementName=stackPanel2, Mode=OneWay}">
                                 <Polyline
-                        Width="{Binding ActualWidth, ElementName=canvas2, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas2, Mode=OneWay}"
-                        Fill="#3FFF0000"
-                        Points="0,0 0,10 10,10 20,0 30,20 40,10 50,30 60,10 60,0"
-                        Stroke="Red"
-                        StrokeThickness="0.4" />
+                                    Width="{Binding ActualWidth, ElementName=canvas2, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas2, Mode=OneWay}"
+                                    Fill="#3FFF0000"
+                                    Points="0,0 0,10 10,10 20,0 30,20 40,10 50,30 60,10 60,0"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" />
                                 <Rectangle
-                        Width="{Binding ActualWidth, ElementName=canvas2, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas2, Mode=OneWay}"
-                        Stroke="Red"
-                        StrokeThickness="0.4" />
+                                    Width="{Binding ActualWidth, ElementName=canvas2, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas2, Mode=OneWay}"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" />
                             </Canvas>
                         </StackPanel>
                         <StackPanel
-                Grid.Row="1"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Name}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Name}" />
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Index}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Index}" />
                         </StackPanel>
                         <StackPanel
-                Grid.Row="2"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item1}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item1}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item2}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item2}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item3}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item3}" />
                         </StackPanel>
                     </Grid>
                     <Grid Height="55" VerticalAlignment="Top">
@@ -198,74 +227,74 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel
-                x:Name="stackPanel3"
-                Grid.Row="1"
-                Grid.RowSpan="2"
-                Grid.Column="1"
-                Orientation="Horizontal">
+                            x:Name="stackPanel3"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            Orientation="Horizontal">
                             <StackPanel.LayoutTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="-1" ScaleY="-1" />
                                 </TransformGroup>
                             </StackPanel.LayoutTransform>
                             <Canvas
-                    x:Name="canvas3"
-                    Width="{Binding ActualWidth, ElementName=stackPanel3, Mode=OneWay}"
-                    Height="{Binding ActualHeight, ElementName=stackPanel3, Mode=OneWay}">
+                                x:Name="canvas3"
+                                Width="{Binding ActualWidth, ElementName=stackPanel3, Mode=OneWay}"
+                                Height="{Binding ActualHeight, ElementName=stackPanel3, Mode=OneWay}">
                                 <Polyline
-                        Width="{Binding ActualWidth, ElementName=canvas3, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas3, Mode=OneWay}"
-                        Fill="#3FFF0000"
-                        Points="0,0 0,10 10,10 20,0 30,20 40,10 50,30 60,10 60,0"
-                        Stroke="Red"
-                        StrokeThickness="0.4" />
+                                    Width="{Binding ActualWidth, ElementName=canvas3, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas3, Mode=OneWay}"
+                                    Fill="#3FFF0000"
+                                    Points="0,0 0,10 10,10 20,0 30,20 40,10 50,30 60,10 60,0"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" />
                                 <Rectangle
-                        Width="{Binding ActualWidth, ElementName=canvas3, Mode=OneWay}"
-                        Height="{Binding ActualHeight, ElementName=canvas3, Mode=OneWay}"
-                        Stroke="Red"
-                        StrokeThickness="0.4" />
+                                    Width="{Binding ActualWidth, ElementName=canvas3, Mode=OneWay}"
+                                    Height="{Binding ActualHeight, ElementName=canvas3, Mode=OneWay}"
+                                    Stroke="Red"
+                                    StrokeThickness="0.4" />
                             </Canvas>
                         </StackPanel>
                         <StackPanel
-                Grid.Row="1"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Name}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Name}" />
                             <Label
-                    Padding="0,0,0,0"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Index}" />
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Index}" />
                         </StackPanel>
                         <StackPanel
-                Grid.Row="2"
-                Grid.Column="3"
-                Orientation="Horizontal">
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Orientation="Horizontal">
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item1}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item1}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item2}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item2}" />
                             <Label
-                    Padding="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    Content="{Binding Item3}" />
+                                Padding="0,0,10,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Content="{Binding Item3}" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>

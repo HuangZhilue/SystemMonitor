@@ -76,7 +76,7 @@ namespace SystemMonitor.Helper
     //    //当值从绑定源传播给绑定目标时，调用方法Convert
     //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     //    {
-    //        if (value == null || value.ToString() == "-999") 
+    //        if (value == null || value.ToString() == "-999")
     //            return DependencyProperty.UnsetValue;
     //        var date = System.Convert.ToInt32(value);
     //        return date + "℃";
@@ -88,4 +88,33 @@ namespace SystemMonitor.Helper
     //        return value != null ? (float)System.Convert.ToDouble(value.ToString()?.TrimEnd('℃')) : DependencyProperty.UnsetValue;
     //    }
     //}
+
+    public class IsNullOrEmptyConverter : IValueConverter
+    {
+        /// <summary>
+        /// 当值从绑定源传播给绑定目标时，调用方法Convert
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="targetType"></param>
+        /// <param name="parameter"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return (value != null && !string.IsNullOrWhiteSpace(value.ToString())) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// 当值从绑定目标传播给绑定源时，调用此方法ConvertBack
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="targetType"></param>
+        /// <param name="parameter"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value.ToString();
+        }
+    }
 }

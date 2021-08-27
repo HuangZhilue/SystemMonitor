@@ -1,4 +1,5 @@
 ﻿using FluentScheduler;
+using Hardcodet.Wpf.TaskbarNotification;
 using LibreHardwareMonitor.Hardware;
 using Microsoft.Extensions.DependencyInjection;
 using Prism.Mvvm;
@@ -37,14 +38,17 @@ namespace SystemMonitor.ViewModels
             new();
 
         private static LimitList<float> NetworkSpeedList { get; } = new(60);
+        private static float LastMaxY { get; set; } = 100f;
+        //private static TaskbarIcon TaskbarIcon { get; set; }
+        //private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
-        private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
+        private static MonitorSettings MonitorSettings { get; set; }// = ServicesProvider.GetRequiredService<MonitorSettings>();
+        public static TaskbarIcon TaskbarIcon { get; set; }
 
-        private static MonitorSettings MonitorSettings { get; } =
-            ServicesProvider.GetRequiredService<MonitorSettings>();
-
-        public MainWindowViewModel()
+        public MainWindowViewModel(HardwareServices hardwareServices, MonitorSettings monitorSettings, TaskbarIcon taskbarIcon)
         {
+            MonitorSettings = monitorSettings;
+            TaskbarIcon = taskbarIcon;
             Title = "System Monitor";
             NetworkSpeedList.CountLimit = MonitorSettings.MonitorViewSettings.NetworkView.DotDensity + 5;
             for (int i = 0; i < NetworkSpeedList.CountLimit; i++)
@@ -65,8 +69,7 @@ namespace SystemMonitor.ViewModels
             }
 
             HardwareServicesCallBack.HardwareChangeEvent += HardwareServicesCallBackOnHardwareChangeEvent;
-            JobManager.AddJob(ServicesProvider.GetRequiredService<HardwareServices>(),
-                e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds());
+            JobManager.AddJob(hardwareServices, e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds());
             JobManager.Start();
         }
 
@@ -135,7 +138,8 @@ namespace SystemMonitor.ViewModels
                             Foreground = foreground,
                             Background = background,
                             CanvasHeight = viewBase.CanvasHeight,
-                            CanvasWidth = viewBase.CanvasWidth
+                            CanvasWidth = viewBase.CanvasWidth,
+                            //Item8FontSize = viewBase.FontSize / 1.3
                         };
 
                         item.PointCollection.Add(new Point(0, 0));
@@ -322,7 +326,8 @@ namespace SystemMonitor.ViewModels
                     item.Item2 = $"接收: {dSpeed} {unitD}";
                     item.PointData = network.NetworkThroughput4DownloadSpeed;// Convert.ToInt32(dSpeed);
                     item.CloneBrush();
-                    item.PointCollection.InsertAndMove(item, NetworkSpeedList);
+                    LastMaxY = item.PointCollection.InsertAndMove(item, NetworkSpeedList, LastMaxY);
+                    //item.Item8 = $"{Math.Ceiling(CommonHelper.FormatBytes(LastMaxY, out string unitD2, out _))} {unitD2}";
                 }
                 else
                 {

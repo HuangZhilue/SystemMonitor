@@ -11,6 +11,8 @@ using SystemMonitor.Models.SettingsModel;
 
 namespace SystemMonitor.Services
 {
+    #region HardwareServicesCallBack
+
     public static class HardwareServicesCallBack
     {
         public delegate void CpuChangeCallback(HardwareModel.Hardware4Cpu cpu);
@@ -69,12 +71,15 @@ namespace SystemMonitor.Services
         }
     }
 
+    #endregion
+
+    #region HardwareServices
+
     public class HardwareServices : IJob
     {
-        private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
+        //private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
-        private static MonitorSettings MonitorSettings { get; } =
-            ServicesProvider.GetRequiredService<MonitorSettings>();
+        private static MonitorSettings MonitorSettings { get; set; } // = ServicesProvider.GetRequiredService<MonitorSettings>();
 
         private Computer Computer { get; }
         private UpdateVisitor UpdateVisitor { get; } = new();
@@ -83,8 +88,10 @@ namespace SystemMonitor.Services
         private bool IsHardwareChange { get; set; } = true;
         private static object Lock { get; } = new();
 
-        public HardwareServices()
+        public HardwareServices(MonitorSettings monitorSettings)
         {
+            MonitorSettings = monitorSettings;
+
             Computer = new Computer
             {
                 IsCpuEnabled = MonitorSettings.IsCpuEnabled,
@@ -330,6 +337,10 @@ namespace SystemMonitor.Services
         }
     }
 
+    #endregion
+
+    #region UpdateVisitor
+
     public class UpdateVisitor : IVisitor
     {
         public void VisitComputer(IComputer computer)
@@ -351,6 +362,10 @@ namespace SystemMonitor.Services
         {
         }
     }
+
+    #endregion
+
+    #region HardwareModel
 
     public static class HardwareModel
     {
@@ -420,4 +435,6 @@ namespace SystemMonitor.Services
             public float NetworkLoad { get; set; }
         }
     }
+
+    #endregion
 }
