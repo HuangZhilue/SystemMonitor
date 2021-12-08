@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA2201: 不要引发保留的异常类型
+dotnet_diagnostic.CA2201.severity = none

@@ -4,17 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Models="clr-namespace:SystemMonitor.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:SystemMonitor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    VerticalContentAlignment="Top"
     d:DataContext="{Binding ChartModel}"
     d:DesignHeight="150"
-    d:DesignWidth="250"
-    mc:Ignorable="d" VerticalContentAlignment="Top">
+    d:DesignWidth="550"
+    mc:Ignorable="d">
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                x:Name="stackPanel"
-                VerticalAlignment="Top">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="Hidden">
+            <StackPanel x:Name="stackPanel" VerticalAlignment="Top">
                 <StackPanel Orientation="Vertical">
                     <Grid Height="55" VerticalAlignment="Top">
                         <Grid.RowDefinitions>
@@ -48,9 +48,12 @@
                                     Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
                                     Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
                                     Fill="#3FFF0000"
+                                    FillRule="EvenOdd"
                                     Points="0,0 0,10 10,10 20,0 30,80 40,10 50,30 60,10 60,0"
+                                    Stretch="Fill"
                                     Stroke="Red"
-                                    StrokeThickness="0.4" FillRule="EvenOdd" Stretch="Fill" StrokeStartLineCap="Flat" />
+                                    StrokeStartLineCap="Flat"
+                                    StrokeThickness="0.4" />
                                 <Rectangle
                                     Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
                                     Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
@@ -58,32 +61,41 @@
                                     StrokeThickness="0.4" />
                                 <Grid
                                     x:Name="grid"
-                                    RenderTransformOrigin="0.5,0.5"
+                                    Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
                                     Height="{Binding ActualHeight, ElementName=canvas1, Mode=OneWay}"
-                                    Width="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}">
+                                    RenderTransformOrigin="0.5,0.5">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="2*"/>
-                                        <RowDefinition Height="8*"/>
+                                        <RowDefinition Height="2*" />
+                                        <RowDefinition Height="8*" />
                                     </Grid.RowDefinitions>
                                     <Grid.LayoutTransform>
                                         <TransformGroup>
-                                            <ScaleTransform ScaleX="-1" ScaleY="-1"/>
-                                            <SkewTransform/>
-                                            <RotateTransform/>
-                                            <TranslateTransform/>
+                                            <ScaleTransform ScaleX="-1" ScaleY="-1" />
+                                            <SkewTransform />
+                                            <RotateTransform />
+                                            <TranslateTransform />
                                         </TransformGroup>
                                     </Grid.LayoutTransform>
-                                    <Label x:Name="label" Content="100Kbps" Foreground="Lime" RenderTransformOrigin="0.5,0.5" FontSize="6" Padding="0,0,0,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
-                                    <Line x:Name="line"
-                                          Fill="Red"
-                                          Stroke="Red"
-                                          X2="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
-                                          Y1="{Binding ActualHeight, ElementName=label, Mode=OneWay}"
-                                          Y2="{Binding ActualHeight, ElementName=label, Mode=OneWay}"
-                                          StrokeDashArray="2"
-                                          StrokeDashCap="Round"
-                                          StrokeThickness="0.5"
-                                          VerticalAlignment="Top"/>
+                                    <Label
+                                        x:Name="label"
+                                        Padding="0,0,0,0"
+                                        HorizontalContentAlignment="Left"
+                                        VerticalContentAlignment="Top"
+                                        Content="100Kbps"
+                                        FontSize="6"
+                                        Foreground="Lime"
+                                        RenderTransformOrigin="0.5,0.5" />
+                                    <Line
+                                        x:Name="line"
+                                        VerticalAlignment="Top"
+                                        Fill="Red"
+                                        Stroke="Red"
+                                        StrokeDashArray="2"
+                                        StrokeDashCap="Round"
+                                        StrokeThickness="0.5"
+                                        X2="{Binding ActualWidth, ElementName=canvas1, Mode=OneWay}"
+                                        Y1="{Binding ActualHeight, ElementName=label, Mode=OneWay}"
+                                        Y2="{Binding ActualHeight, ElementName=label, Mode=OneWay}" />
                                 </Grid>
                             </Canvas>
                         </StackPanel>
@@ -298,6 +310,70 @@
                         </StackPanel>
                     </Grid>
                 </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        <ScrollViewer HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <StackPanel>
+                <Grid Height="50" Margin="0,5,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="60" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.ColumnSpan="3" Stroke="{DynamicResource InfoBrush}" />
+                    <CheckBox IsChecked="True" />
+                    <TextBlock
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        FontSize="36"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        Text="Cpu"
+                        TextWrapping="WrapWithOverflow" />
+                    <Grid Grid.Column="2" Margin="0,1,0,1">
+                        <!--<Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Rectangle Grid.RowSpan="3" Stroke="{DynamicResource InfoBrush}" />-->
+                        <!--<Button Grid.Row="0" Style="{StaticResource ButtonInfo}" hc:IconElement.Geometry="{StaticResource UpGeometry}" HorizontalAlignment="Stretch"/>
+                        <Button Grid.Row="2" Style="{StaticResource ButtonInfo}" hc:IconElement.Geometry="{StaticResource DownGeometry}" HorizontalAlignment="Stretch"/>-->
+                        <hc:ButtonGroup
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Orientation="Vertical">
+                            <Button
+                                Height="22"
+                                Margin="0,0,0,0"
+                                Padding="0,0,0,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Stretch"
+                                hc:IconElement.Geometry="{StaticResource UpGeometry}"
+                                BorderBrush="{x:Null}"
+                                Command="{Binding DataContext.IndexUpChangedCommand, ElementName=userControl}"
+                                CommandParameter="{Binding SelectedItem, ElementName=listBox}"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                Style="{StaticResource ButtonInfo}" />
+                            <Button
+                                Height="22"
+                                Margin="0,0,0,0"
+                                Padding="0,0,0,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Stretch"
+                                hc:IconElement.Geometry="{StaticResource DownGeometry}"
+                                BorderBrush="{x:Null}"
+                                Command="{Binding DataContext.IndexDownChangedCommand, ElementName=userControl}"
+                                CommandParameter="{Binding SelectedItem, ElementName=listBox}"
+                                Style="{StaticResource ButtonInfo}" />
+                        </hc:ButtonGroup>
+                    </Grid>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

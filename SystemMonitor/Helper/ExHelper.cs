@@ -43,7 +43,7 @@ namespace SystemMonitor.Helper
                 // 相差超过5%时，使用新的“最大值”
                 lastMaxY = maxY;
             }
-            Debug.WriteLine($"{lastMaxY}\t\t{item.PointData}");
+            //Debug.WriteLine($"{lastMaxY}\t\t{item.PointData}");
             for (int i = pointNum; i < pc.Count - pointNum; i++)
             {
                 // 0.5 = pointData / MaxY * H

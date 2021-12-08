@@ -1,5 +1,7 @@
 ﻿using LibreHardwareMonitor.Hardware;
 using Prism.Mvvm;
+using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
@@ -31,6 +33,7 @@ namespace SystemMonitor.Models
         private int _canvasHeight;
         private int _dotDensity;
         private int _canvasWidth;
+        private double fontSize = 12d;
 
         public Visibility Visibility
         {
@@ -165,16 +168,27 @@ namespace SystemMonitor.Models
             get => _canvasHeight;
             set => SetProperty(ref _canvasHeight, value);
         }
+
         public int DotDensity
         {
             get => _dotDensity < 50 ? 50 : _dotDensity;
             set => SetProperty(ref _dotDensity, value);
         }
+
         public int CanvasWidth
         {
             get => _canvasWidth;
             set => SetProperty(ref _canvasWidth, value);
         }
+
+        public double FontSize
+        {
+            get => fontSize;
+            set => SetProperty(ref fontSize, value);
+        }
+
+        public float LastMaxY { get; set; } = 100f;
+        public LimitList<float> NetworkSpeedList { get; } = new(60);
 
         public void ClearData()
         {
@@ -189,6 +203,33 @@ namespace SystemMonitor.Models
             Foreground = Foreground.Clone();
             FillBrush = FillBrush.Clone();
             StrokeBrush = StrokeBrush.Clone();
+        }
+
+        public float InsertAndMove(int index = 1, int pointNum = 1)
+        {
+            Point point = new(0, PointData * ((CanvasHeight - 5) / (double)MaxPointData));
+            PointCollection.Insert(index, point);
+            PointCollection.RemoveAt(DotDensity + 2);
+            //Vector v = new(item.CanvasWidth / (double)item.DotDensity, 0);
+
+            float maxY = NetworkSpeedList.OrderByDescending(x => x).Take(10).Average() / 0.8f;
+            maxY = maxY < 1 ? 1 : maxY;
+            if (Math.Abs(maxY - LastMaxY) > LastMaxY * 0.05f)
+            {
+                // 相差超过5%时，使用新的“最大值”
+                LastMaxY = maxY;
+            }
+            //Debug.WriteLine($"{lastMaxY}\t\t{item.PointData}");
+            for (int i = pointNum; i < PointCollection.Count - pointNum; i++)
+            {
+                // 0.5 = pointData / MaxY * H
+                Point p = PointCollection[i];
+                p.Y = NetworkSpeedList[i - pointNum] / LastMaxY * CanvasHeight;
+                p.X += CanvasWidth / (double)DotDensity;
+                PointCollection[i] = p;
+            }
+
+            return LastMaxY;
         }
     }
 }

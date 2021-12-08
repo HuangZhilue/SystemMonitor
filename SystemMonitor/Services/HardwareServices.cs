@@ -85,7 +85,7 @@ namespace SystemMonitor.Services
         private UpdateVisitor UpdateVisitor { get; } = new();
         private List<string> ActiveAdapterName { get; } = new();
         private List<HardwareType> EnableHardwareList { get; } = new();
-        private bool IsHardwareChange { get; set; } = true;
+        public bool IsHardwareChange { get; set; } = true;
         private static object Lock { get; } = new();
 
         public HardwareServices(MonitorSettings monitorSettings)

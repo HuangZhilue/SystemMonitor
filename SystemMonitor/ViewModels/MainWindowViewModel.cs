@@ -1,12 +1,13 @@
 ﻿using FluentScheduler;
-using Hardcodet.Wpf.TaskbarNotification;
 using LibreHardwareMonitor.Hardware;
-using Microsoft.Extensions.DependencyInjection;
+using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using SystemMonitor.Helper;
@@ -37,24 +38,20 @@ namespace SystemMonitor.ViewModels
         public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; set; } =
             new();
 
-        private static LimitList<float> NetworkSpeedList { get; } = new(60);
-        private static float LastMaxY { get; set; } = 100f;
-        //private static TaskbarIcon TaskbarIcon { get; set; }
-        //private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
+        public DelegateCommand CloseAppCommand { get; set; }
+        public DelegateCommand RestartAppCommand { get; set; }
+        public DelegateCommand ShowSettingsViewCommand { get; set; }
 
-        private static MonitorSettings MonitorSettings { get; set; }// = ServicesProvider.GetRequiredService<MonitorSettings>();
-        public static TaskbarIcon TaskbarIcon { get; set; }
+        //private static LimitList<float> NetworkSpeedList { get; } = new(60);
+        //private static float LastMaxY { get; set; } = 100f;
+        private static MonitorSettings MonitorSettings { get; set; }
+        private static IDialogService DialogService { get; set; }
 
-        public MainWindowViewModel(HardwareServices hardwareServices, MonitorSettings monitorSettings, TaskbarIcon taskbarIcon)
+        public MainWindowViewModel(HardwareServices hardwareServices, MonitorSettings monitorSettings, IDialogService dialogService)
         {
             MonitorSettings = monitorSettings;
-            TaskbarIcon = taskbarIcon;
             Title = "System Monitor";
-            NetworkSpeedList.CountLimit = MonitorSettings.MonitorViewSettings.NetworkView.DotDensity + 5;
-            for (int i = 0; i < NetworkSpeedList.CountLimit; i++)
-            {
-                NetworkSpeedList.Add(0);
-            }
+            DialogService = dialogService;
 
             WindowsWidth = MonitorSettings.WindowsWidth;
             if (MonitorSettings.HardwareIndex.Count == 0)
@@ -71,7 +68,12 @@ namespace SystemMonitor.ViewModels
             HardwareServicesCallBack.HardwareChangeEvent += HardwareServicesCallBackOnHardwareChangeEvent;
             JobManager.AddJob(hardwareServices, e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds());
             JobManager.Start();
+            CloseAppCommand = new DelegateCommand(CloseApp);
+            RestartAppCommand = new DelegateCommand(RestartApp);
+            ShowSettingsViewCommand = new DelegateCommand(ShowSettingsView);
         }
+
+        #region HardwareChangeEvent
 
         private void HardwareServicesCallBackOnHardwareChangeEvent(List<HardwareType> list)
         {
@@ -139,8 +141,14 @@ namespace SystemMonitor.ViewModels
                             Background = background,
                             CanvasHeight = viewBase.CanvasHeight,
                             CanvasWidth = viewBase.CanvasWidth,
+                            FontSize = viewBase.FontSize,
                             //Item8FontSize = viewBase.FontSize / 1.3
                         };
+                        item.NetworkSpeedList.CountLimit = MonitorSettings.MonitorViewSettings.NetworkView.DotDensity + 5;
+                        for (int i = 0; i < item.NetworkSpeedList.CountLimit; i++)
+                        {
+                            item.NetworkSpeedList.Add(0);
+                        }
 
                         item.PointCollection.Add(new Point(0, 0));
                         for (int i = 0; i <= viewBase.DotDensity; i++)
@@ -172,6 +180,10 @@ namespace SystemMonitor.ViewModels
             HardwareServicesCallBack.NetworkChangeEvent += HardwareServicesCallBack_NetworkChangeEvent;
             HardwareServicesCallBack.StorageChangeEvent += HardwareServicesCallBack_StorageChangeEvent;
         }
+
+        #endregion
+
+        #region HardwareServicesCallBack
 
         private void HardwareServicesCallBack_CpuChangeEvent(HardwareModel.Hardware4Cpu cpu)
         {
@@ -319,14 +331,15 @@ namespace SystemMonitor.ViewModels
                             maxUnitIndex);
                     }
 
-                    NetworkSpeedList.Insert(0, network.NetworkThroughput4DownloadSpeed);
+                    item.NetworkSpeedList.Insert(0, network.NetworkThroughput4DownloadSpeed);
                     item.Index = network.IndexString;
                     item.Name = $"{network.NetworkName}";
                     item.Item1 = $"发送: {uSpeed}"; // $"发送: {uSpeed} {unitU}"
                     item.Item2 = $"接收: {dSpeed} {unitD}";
                     item.PointData = network.NetworkThroughput4DownloadSpeed;// Convert.ToInt32(dSpeed);
                     item.CloneBrush();
-                    LastMaxY = item.PointCollection.InsertAndMove(item, NetworkSpeedList, LastMaxY);
+                    item.PointCollection.InsertAndMove(item);
+                    item.LastMaxY = item.InsertAndMove();
                     //item.Item8 = $"{Math.Ceiling(CommonHelper.FormatBytes(LastMaxY, out string unitD2, out _))} {unitD2}";
                 }
                 else
@@ -359,5 +372,44 @@ namespace SystemMonitor.ViewModels
                 }
             }).RunInBackground();
         }
+
+        #endregion
+
+        #region 通知栏右键菜单
+
+        /// <summary>
+        /// 退出程序
+        /// </summary>
+        private void CloseApp()
+        {
+            JobManager.Stop();
+            HardwareServicesCallBack.CpuChangeEvent -= HardwareServicesCallBack_CpuChangeEvent;
+            HardwareServicesCallBack.GpuAChangeEvent -= HardwareServicesCallBack_GpuAChangeEvent;
+            HardwareServicesCallBack.GpuNChangeEvent -= HardwareServicesCallBack_GpuNChangeEvent;
+            HardwareServicesCallBack.MemoryChangeEvent -= HardwareServicesCallBack_MemoryChangeEvent;
+            HardwareServicesCallBack.NetworkChangeEvent -= HardwareServicesCallBack_NetworkChangeEvent;
+            HardwareServicesCallBack.StorageChangeEvent -= HardwareServicesCallBack_StorageChangeEvent;
+            Application.Current.Shutdown();
+        }
+
+        /// <summary>
+        /// 重启程序
+        /// </summary>
+        private void RestartApp()
+        {
+            string appExePath = Regex.Replace(Application.ResourceAssembly.Location, @"\.([D|d][L|l]{2})$", ".exe");
+            Process.Start(appExePath);
+            CloseApp();
+        }
+
+        /// <summary>
+        /// 显示设置页面
+        /// </summary>
+        private void ShowSettingsView()
+        {
+            DialogService.ShowDialog(nameof(Views.Settings), new DialogParameters(), r => Debug.WriteLine(r.ToString()));
+        }
+
+        #endregion
     }
 }

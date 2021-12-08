@@ -1,0 +1,285 @@
+﻿<UserControl
+    x:Class="SystemMonitor.Views.Settings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Helper="clr-namespace:SystemMonitor.Helper"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:SystemMonitor.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    x:Name="userControl"
+    d:DesignHeight="450"
+    d:DesignWidth="600"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    Background="White"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Helper:TextColorConverter x:Key="TextColorConverter" />
+    </UserControl.Resources>
+    <prism:Dialog.WindowStyle>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="prism:Dialog.WindowStartupLocation" Value="CenterScreen" />
+            <Setter Property="ResizeMode" Value="CanResize" />
+            <Setter Property="ShowInTaskbar" Value="true" />
+            <Setter Property="SizeToContent" Value="WidthAndHeight" />
+            <Setter Property="Icon" Value="/Resources/icon.ico" />
+            <Setter Property="MinWidth" Value="600" />
+            <Setter Property="MinHeight" Value="520" />
+        </Style>
+    </prism:Dialog.WindowStyle>
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel
+            Margin="10,10,10,45"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+            <StackPanel>
+                <hc:Divider
+                    Margin="0,5,0,0"
+                    HorizontalContentAlignment="Left"
+                    Content="通用设置" />
+                <hc:NumericUpDown
+                    Margin="0,5,0,0"
+                    hc:TitleElement.Title="主窗口宽度"
+                    hc:TitleElement.TitlePlacement="Left"
+                    hc:TitleElement.TitleWidth="140"
+                    Style="{StaticResource NumericUpDownExtend}"
+                    Value="{Binding WindowsWidth}" />
+                <hc:NumericUpDown
+                    Margin="0,5,0,0"
+                    hc:Minimum="100"
+                    hc:TitleElement.Title="监控数据更新频率"
+                    hc:TitleElement.TitlePlacement="Left"
+                    hc:TitleElement.TitleWidth="140"
+                    Style="{StaticResource NumericUpDownExtend}"
+                    Value="{Binding LoopInterval}" />
+            </StackPanel>
+            <StackPanel>
+                <hc:Divider
+                    Margin="0,5,0,0"
+                    HorizontalContentAlignment="Left"
+                    Content="显示设置" />
+                <Grid Margin="0,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" MinWidth="100">
+                        <ListBox
+                            x:Name="listBox"
+                            HorizontalContentAlignment="Stretch"
+                            ItemsSource="{Binding SettingsModelList}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Height="50" Margin="0,5,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="60" />
+                                        </Grid.ColumnDefinitions>
+                                        <!--<Rectangle Grid.ColumnSpan="3" Stroke="{DynamicResource InfoBrush}"></Rectangle>-->
+                                        <CheckBox IsChecked="{Binding IsEnabled}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            FontSize="30"
+                                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                            Text="{Binding HardwareTypeString}"
+                                            TextWrapping="WrapWithOverflow" />
+                                        <Grid Grid.Column="2" Margin="0,1,0,1">
+                                            <hc:ButtonGroup
+                                                VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Stretch"
+                                                Orientation="Vertical">
+                                                <Button
+                                                    Height="22"
+                                                    Margin="0,0,0,0"
+                                                    Padding="0,0,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Stretch"
+                                                    hc:IconElement.Geometry="{StaticResource UpGeometry}"
+                                                    BorderBrush="{x:Null}"
+                                                    Command="{Binding DataContext.IndexUpChangedCommand, ElementName=userControl}"
+                                                    CommandParameter="{Binding}"
+                                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                    Style="{StaticResource ButtonInfo}" />
+                                                <Button
+                                                    Height="22"
+                                                    Margin="0,0,0,0"
+                                                    Padding="0,0,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Stretch"
+                                                    hc:IconElement.Geometry="{StaticResource DownGeometry}"
+                                                    BorderBrush="{x:Null}"
+                                                    Command="{Binding DataContext.IndexDownChangedCommand, ElementName=userControl}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource ButtonInfo}" />
+                                            </hc:ButtonGroup>
+                                        </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="SelectionChanged">
+                                    <b:InvokeCommandAction Command="{Binding SelectionChangedCommand}" CommandParameter="{Binding SelectedItem, ElementName=listBox}" />
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </ListBox>
+                    </StackPanel>
+                    <GridSplitter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
+                    <StackPanel Grid.Column="2" MinWidth="100">
+                        <CheckBox
+                            HorizontalAlignment="Stretch"
+                            Content="显示图形"
+                            IsChecked="{Binding SelectedSettings.ShowLine}" />
+                        <hc:NumericUpDown
+                            Margin="0,5,0,0"
+                            hc:TitleElement.Title="图形绘制密度"
+                            hc:TitleElement.TitlePlacement="Left"
+                            hc:TitleElement.TitleWidth="140"
+                            Style="{StaticResource NumericUpDownExtend}"
+                            Value="{Binding SelectedSettings.DotDensity}" />
+                        <hc:NumericUpDown
+                            Margin="0,5,0,0"
+                            hc:TitleElement.Title="图形高度"
+                            hc:TitleElement.TitlePlacement="Left"
+                            hc:TitleElement.TitleWidth="140"
+                            Style="{StaticResource NumericUpDownExtend}"
+                            Value="{Binding SelectedSettings.CanvasHeight}" />
+                        <hc:NumericUpDown
+                            Margin="0,5,0,0"
+                            hc:TitleElement.Title="图形宽度"
+                            hc:TitleElement.TitlePlacement="Left"
+                            hc:TitleElement.TitleWidth="140"
+                            Style="{StaticResource NumericUpDownExtend}"
+                            Value="{Binding SelectedSettings.CanvasWidth}" />
+                        <StackPanel HorizontalAlignment="Stretch">
+                            <Grid Margin="0,5,0,0" HorizontalAlignment="Stretch">
+                                <Label
+                                    Width="140"
+                                    Padding="0,5,5,5"
+                                    HorizontalAlignment="Left"
+                                    HorizontalContentAlignment="Left"
+                                    VerticalContentAlignment="Stretch"
+                                    Content="线条颜色"
+                                    Style="{StaticResource BaseStyle}" />
+                                <Button
+                                    Margin="140,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Background="{Binding SelectedSettings.StrokeBrush}"
+                                    BorderBrush="{Binding SelectedSettings.StrokeBrush}"
+                                    Command="{Binding SelectColorCommand}"
+                                    CommandParameter="{Binding SelectedSettings.StrokeBrush}"
+                                    Content="{Binding SelectedSettings.StrokeBrush}"
+                                    Foreground="{Binding SelectedSettings.StrokeBrush, Converter={StaticResource TextColorConverter}}" />
+                            </Grid>
+                            <Grid Margin="0,5,0,0" HorizontalAlignment="Stretch">
+                                <Label
+                                    Width="140"
+                                    Padding="0,5,5,5"
+                                    HorizontalAlignment="Left"
+                                    HorizontalContentAlignment="Left"
+                                    VerticalContentAlignment="Stretch"
+                                    Content="填充颜色"
+                                    Style="{StaticResource BaseStyle}" />
+                                <Button
+                                    Margin="140,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Background="{Binding SelectedSettings.FillBrush}"
+                                    BorderBrush="{Binding SelectedSettings.FillBrush}"
+                                    Command="{Binding SelectColorCommand}"
+                                    CommandParameter="{Binding SelectedSettings.FillBrush}"
+                                    Content="{Binding SelectedSettings.FillBrush}"
+                                    Foreground="{Binding SelectedSettings.FillBrush, Converter={StaticResource TextColorConverter}}" />
+                            </Grid>
+                            <Grid Margin="0,5,0,0" HorizontalAlignment="Stretch">
+                                <Label
+                                    Width="140"
+                                    Padding="0,5,5,5"
+                                    HorizontalAlignment="Left"
+                                    HorizontalContentAlignment="Left"
+                                    VerticalContentAlignment="Stretch"
+                                    Content="背景颜色"
+                                    Style="{StaticResource BaseStyle}" />
+                                <Button
+                                    Margin="140,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Background="{Binding SelectedSettings.Background}"
+                                    BorderBrush="{Binding SelectedSettings.Background}"
+                                    Command="{Binding SelectColorCommand}"
+                                    CommandParameter="{Binding SelectedSettings.Background}"
+                                    Content="{Binding SelectedSettings.Background}"
+                                    Foreground="{Binding SelectedSettings.Background, Converter={StaticResource TextColorConverter}}" />
+                            </Grid>
+                            <Grid Margin="0,5,0,0" HorizontalAlignment="Stretch">
+                                <Label
+                                    Width="140"
+                                    Padding="0,5,5,5"
+                                    HorizontalAlignment="Left"
+                                    HorizontalContentAlignment="Left"
+                                    VerticalContentAlignment="Stretch"
+                                    Content="字体颜色"
+                                    Style="{StaticResource BaseStyle}" />
+                                <Button
+                                    Margin="140,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Background="{Binding SelectedSettings.Foreground}"
+                                    BorderBrush="{Binding SelectedSettings.Foreground}"
+                                    Command="{Binding SelectColorCommand}"
+                                    CommandParameter="{Binding SelectedSettings.Foreground}"
+                                    Content="{Binding SelectedSettings.Foreground}"
+                                    Foreground="{Binding SelectedSettings.Foreground, Converter={StaticResource TextColorConverter}}" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+        <Grid
+            Margin="5"
+            VerticalAlignment="Bottom"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <hc:ButtonGroup
+                HorizontalAlignment="Left"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch">
+                <Button Command="{Binding RestoreCommand}" Content="恢复默认" />
+            </hc:ButtonGroup>
+
+            <hc:ButtonGroup
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch">
+                <Button
+                    Command="{Binding SaveCommand}"
+                    Content="保存"
+                    Style="{StaticResource ButtonPrimary}" />
+                <Button Command="{Binding CancelCommand}" Content="取消" />
+            </hc:ButtonGroup>
+        </Grid>
+    </Grid>
+</UserControl>

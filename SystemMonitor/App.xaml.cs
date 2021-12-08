@@ -1,13 +1,11 @@
-﻿using Prism.Ioc;
+﻿using Microsoft.Extensions.Configuration;
+using Prism.Ioc;
+using Prism.Modularity;
 using System.Windows;
+using SystemMonitor.Models.SettingsModel;
+using SystemMonitor.Services;
 using SystemMonitor.ViewModels;
 using SystemMonitor.Views;
-using Prism.Modularity;
-using Hardcodet.Wpf.TaskbarNotification;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using SystemMonitor.Services;
-using SystemMonitor.Models.SettingsModel;
 
 namespace SystemMonitor
 {
@@ -23,26 +21,19 @@ namespace SystemMonitor
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            //TaskbarIcon = (TaskbarIcon)new App().FindResource("MyNotifyIcon");
-
             IConfigurationRoot Configuration = new ConfigurationBuilder()
                 .AddJsonFile("AppSettings.json", true, true)
                 .Build();
             MonitorSettings monitorSettings = Configuration.GetSection("MonitorSettings").Get<MonitorSettings>();
             monitorSettings.Configuration = Configuration;
 
-            //ServiceProvider ServiceProvider = new ServiceCollection()
-            //    .AddSingleton(typeof(IConfigurationRoot), Configuration)
-            //    .AddTransient<HardwareServices>()
-            //    .AddSingleton(Configuration.GetSection("MonitorSettings").Get<MonitorSettings>())
-            //    .AddSingleton((TaskbarIcon)FindResource("MyNotifyIcon"))
-            //    .BuildServiceProvider();
-
             _ = containerRegistry
                 .RegisterInstance(Configuration)
                 .RegisterScoped<HardwareServices>()
-                .RegisterInstance(monitorSettings)
-                .RegisterInstance((TaskbarIcon)FindResource("MyNotifyIcon"));
+                .RegisterInstance(monitorSettings);
+
+            containerRegistry.RegisterDialog<Settings, SettingsViewModel>();
+            containerRegistry.RegisterDialog<ColorPicker, ColorPickerViewModel>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
