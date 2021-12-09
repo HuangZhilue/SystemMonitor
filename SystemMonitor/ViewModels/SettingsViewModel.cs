@@ -1,6 +1,7 @@
 ﻿using FluentScheduler;
 using LibreHardwareMonitor.Hardware;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -12,10 +13,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using SystemMonitor.Helper;
 using SystemMonitor.Models;
 using SystemMonitor.Models.SettingsModel;
 using SystemMonitor.Services;
@@ -28,6 +29,9 @@ namespace SystemMonitor.ViewModels
         private SettingsModels _selectedSettings;
         private int _loopInterval;
         private int _windowsWidth = 250;
+        private bool _isAutoRun;
+        private double _opacity = 1d;
+        private Visibility _isSaving = Visibility.Hidden;
 
         public string Title
         {
@@ -53,19 +57,37 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _windowsWidth, value);
         }
 
-        public TrulyObservableCollection<SettingsModels> SettingsModelList { get; set; } = new();
+        public bool IsAutoRun
+        {
+            get => _isAutoRun;
+            set => SetProperty(ref _isAutoRun, value);
+        }
 
-        public DelegateCommand<string> CloseDialogCommand { get; set; }
-        public DelegateCommand SaveCommand { get; set; }
-        public DelegateCommand CancelCommand { get; set; }
-        public DelegateCommand RestoreCommand { get; set; }
-        public DelegateCommand<SettingsModels> SelectionChangedCommand { get; set; }
-        public DelegateCommand<SettingsModels> IndexUpChangedCommand { get; set; }
-        public DelegateCommand<SettingsModels> IndexDownChangedCommand { get; set; }
-        public DelegateCommand<string> SelectColorCommand { get; set; }
+        public double Opacity
+        {
+            get => _opacity;
+            set => SetProperty(ref _opacity, value);
+        }
+
+        public Visibility IsSaving
+        {
+            get => _isSaving;
+            set => SetProperty(ref _isSaving, value);
+        }
+
+        public TrulyObservableCollection<SettingsModels> SettingsModelList { get; } = new();
+
+        public DelegateCommand<string> CloseDialogCommand { get; }
+        public DelegateCommand SaveCommand { get; }
+        public DelegateCommand CancelCommand { get; }
+        public DelegateCommand RestoreCommand { get; }
+        public DelegateCommand<SettingsModels> SelectionChangedCommand { get; }
+        public DelegateCommand<SettingsModels> IndexUpChangedCommand { get; }
+        public DelegateCommand<SettingsModels> IndexDownChangedCommand { get; }
+        public DelegateCommand<string> SelectColorCommand { get; }
         private MonitorSettings MonitorSettings { get; set; }
         private HardwareServices HardwareServices { get; set; }
-        private IConfigurationRoot Configuration { get; set; }
+        private IConfigurationRoot Configuration { get; }
         private static IDialogService DialogService { get; set; }
 
         public SettingsViewModel(MonitorSettings monitorSettings, HardwareServices hardwareServices, IConfigurationRoot configuration, IDialogService dialogService)
@@ -89,6 +111,19 @@ namespace SystemMonitor.ViewModels
         {
             LoopInterval = MonitorSettings.LoopInterval;
             WindowsWidth = MonitorSettings.WindowsWidth;
+
+            {
+                RegistryKey registryKeyk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                string regValue = registryKeyk.GetValue(nameof(SystemMonitor))?.ToString();
+                if (!string.IsNullOrWhiteSpace(regValue))
+                {
+                    IsAutoRun = regValue == Environment.ProcessPath;
+                }
+                else
+                {
+                    IsAutoRun = false;
+                }
+            }
 
             int index = 0;
             SettingsModelList.Clear();
@@ -180,88 +215,126 @@ namespace SystemMonitor.ViewModels
 
         private void Save()
         {
-            JobManager.Stop();
-            JobManager.AllSchedules.ToList().ForEach(job =>
-            {
-                job.Disable();
-            });
-            JobManager.RemoveAllJobs();
+            IsSaving = Visibility.Visible;
+            Opacity = 0.5d;
 
-            MonitorSettings.LoopInterval = LoopInterval;
-            MonitorSettings.WindowsWidth = WindowsWidth;
-            MonitorSettings.HardwareIndex.Clear();
-            SettingsModelList.ToList().ForEach(item =>
+            // 因为SettingsModelList中的SolidColorBrush数据存在线程安全问题，暂时通过该方法继续操作
+            var settingsModelList = JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(SettingsModelList.ToList()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() });
+
+            Task.Run(() =>
             {
-                MonitorSettings.HardwareIndex.Add(item.HardwareType);
+                //new Action(() =>
+                //{
+                JobManager.Stop();
+                JobManager.AllSchedules.ToList().ForEach(job => job.Disable());
+                JobManager.RemoveAllJobs();
+
+                MonitorSettings.LoopInterval = LoopInterval;
+                MonitorSettings.WindowsWidth = WindowsWidth;
+
+                {
+                    RegistryKey registryKeyk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    if (IsAutoRun)
+                    {
+                        registryKeyk.SetValue(nameof(SystemMonitor), Environment.ProcessPath);
+                    }
+                    else
+                    {
+                        registryKeyk.DeleteValue(nameof(SystemMonitor));
+                    }
+                }
+
+                MonitorSettings.HardwareIndex.Clear();
+                settingsModelList.ForEach(item =>
+                {
+                    #region 因为SettingsModelList中的SolidColorBrush数据存在线程安全问题，暂时通过该方法继续操作
+
+                    MonitorSettings.HardwareIndex.Add((HardwareType)item.HardwareType);
+                    Color background = (Color)ColorConverter.ConvertFromString(item.Background.ToString());
+                    Color foreground = (Color)ColorConverter.ConvertFromString(item.Foreground.ToString());
+                    Color strokeBrush = (Color)ColorConverter.ConvertFromString(item.StrokeBrush.ToString());
+                    Color fillBrush = (Color)ColorConverter.ConvertFromString(item.FillBrush.ToString());
+
+                    #endregion
 
 #pragma warning disable IDE0066, IDE0010 // 将 switch 语句转换为表达式 / 补充缺失项
-                switch (item.HardwareType)
+                    switch (item.HardwareType)
 #pragma warning restore IDE0066, IDE0010 // 将 switch 语句转换为表达式 / 补充缺失项
-                {
-                    case HardwareType.Cpu:
-                        MonitorSettings.IsCpuEnabled = item.IsEnabled;
-                        MonitorSettings.MonitorViewSettings.CpuView.ShowLine = item.ShowLine;
-                        MonitorSettings.MonitorViewSettings.CpuView.DotDensity = item.DotDensity;
-                        MonitorSettings.MonitorViewSettings.CpuView.CanvasHeight = item.CanvasHeight;
-                        MonitorSettings.MonitorViewSettings.CpuView.CanvasWidth = item.CanvasWidth;
-                        MonitorSettings.MonitorViewSettings.CpuView.Background = new() { item.Background.Color.A, item.Background.Color.R, item.Background.Color.G, item.Background.Color.B };
-                        MonitorSettings.MonitorViewSettings.CpuView.Foreground = new() { item.Foreground.Color.A, item.Foreground.Color.R, item.Foreground.Color.G, item.Foreground.Color.B };
-                        MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush = new() { item.StrokeBrush.Color.A, item.StrokeBrush.Color.R, item.StrokeBrush.Color.G, item.StrokeBrush.Color.B };
-                        MonitorSettings.MonitorViewSettings.CpuView.FillBrush = new() { item.FillBrush.Color.A, item.FillBrush.Color.R, item.FillBrush.Color.G, item.FillBrush.Color.B };
-                        break;
-                    case HardwareType.Memory:
-                        MonitorSettings.IsMemoryEnabled = item.IsEnabled;
-                        MonitorSettings.MonitorViewSettings.MemoryView.ShowLine = item.ShowLine;
-                        MonitorSettings.MonitorViewSettings.MemoryView.DotDensity = item.DotDensity;
-                        MonitorSettings.MonitorViewSettings.MemoryView.CanvasHeight = item.CanvasHeight;
-                        MonitorSettings.MonitorViewSettings.MemoryView.CanvasWidth = item.CanvasWidth;
-                        MonitorSettings.MonitorViewSettings.MemoryView.Background = new() { item.Background.Color.A, item.Background.Color.R, item.Background.Color.G, item.Background.Color.B };
-                        MonitorSettings.MonitorViewSettings.MemoryView.Foreground = new() { item.Foreground.Color.A, item.Foreground.Color.R, item.Foreground.Color.G, item.Foreground.Color.B };
-                        MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush = new() { item.StrokeBrush.Color.A, item.StrokeBrush.Color.R, item.StrokeBrush.Color.G, item.StrokeBrush.Color.B };
-                        MonitorSettings.MonitorViewSettings.MemoryView.FillBrush = new() { item.FillBrush.Color.A, item.FillBrush.Color.R, item.FillBrush.Color.G, item.FillBrush.Color.B };
-                        break;
-                    case HardwareType.GpuNvidia:
-                    case HardwareType.GpuAmd:
-                        MonitorSettings.IsGpuEnabled = item.IsEnabled;
-                        MonitorSettings.MonitorViewSettings.GpuView.ShowLine = item.ShowLine;
-                        MonitorSettings.MonitorViewSettings.GpuView.DotDensity = item.DotDensity;
-                        MonitorSettings.MonitorViewSettings.GpuView.CanvasHeight = item.CanvasHeight;
-                        MonitorSettings.MonitorViewSettings.GpuView.CanvasWidth = item.CanvasWidth;
-                        MonitorSettings.MonitorViewSettings.GpuView.Background = new() { item.Background.Color.A, item.Background.Color.R, item.Background.Color.G, item.Background.Color.B };
-                        MonitorSettings.MonitorViewSettings.GpuView.Foreground = new() { item.Foreground.Color.A, item.Foreground.Color.R, item.Foreground.Color.G, item.Foreground.Color.B };
-                        MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush = new() { item.StrokeBrush.Color.A, item.StrokeBrush.Color.R, item.StrokeBrush.Color.G, item.StrokeBrush.Color.B };
-                        MonitorSettings.MonitorViewSettings.GpuView.FillBrush = new() { item.FillBrush.Color.A, item.FillBrush.Color.R, item.FillBrush.Color.G, item.FillBrush.Color.B };
-                        break;
-                    case HardwareType.Storage:
-                        MonitorSettings.IsStorageEnabled = item.IsEnabled;
-                        MonitorSettings.MonitorViewSettings.StorageView.ShowLine = item.ShowLine;
-                        MonitorSettings.MonitorViewSettings.StorageView.DotDensity = item.DotDensity;
-                        MonitorSettings.MonitorViewSettings.StorageView.CanvasHeight = item.CanvasHeight;
-                        MonitorSettings.MonitorViewSettings.StorageView.CanvasWidth = item.CanvasWidth;
-                        MonitorSettings.MonitorViewSettings.StorageView.Background = new() { item.Background.Color.A, item.Background.Color.R, item.Background.Color.G, item.Background.Color.B };
-                        MonitorSettings.MonitorViewSettings.StorageView.Foreground = new() { item.Foreground.Color.A, item.Foreground.Color.R, item.Foreground.Color.G, item.Foreground.Color.B };
-                        MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush = new() { item.StrokeBrush.Color.A, item.StrokeBrush.Color.R, item.StrokeBrush.Color.G, item.StrokeBrush.Color.B };
-                        MonitorSettings.MonitorViewSettings.StorageView.FillBrush = new() { item.FillBrush.Color.A, item.FillBrush.Color.R, item.FillBrush.Color.G, item.FillBrush.Color.B };
-                        break;
-                    case HardwareType.Network:
-                        MonitorSettings.IsNetworkEnabled = item.IsEnabled;
-                        MonitorSettings.MonitorViewSettings.NetworkView.ShowLine = item.ShowLine;
-                        MonitorSettings.MonitorViewSettings.NetworkView.DotDensity = item.DotDensity;
-                        MonitorSettings.MonitorViewSettings.NetworkView.CanvasHeight = item.CanvasHeight;
-                        MonitorSettings.MonitorViewSettings.NetworkView.CanvasWidth = item.CanvasWidth;
-                        MonitorSettings.MonitorViewSettings.NetworkView.Background = new() { item.Background.Color.A, item.Background.Color.R, item.Background.Color.G, item.Background.Color.B };
-                        MonitorSettings.MonitorViewSettings.NetworkView.Foreground = new() { item.Foreground.Color.A, item.Foreground.Color.R, item.Foreground.Color.G, item.Foreground.Color.B };
-                        MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush = new() { item.StrokeBrush.Color.A, item.StrokeBrush.Color.R, item.StrokeBrush.Color.G, item.StrokeBrush.Color.B };
-                        MonitorSettings.MonitorViewSettings.NetworkView.FillBrush = new() { item.FillBrush.Color.A, item.FillBrush.Color.R, item.FillBrush.Color.G, item.FillBrush.Color.B };
-                        break;
-                }
-            });
+                    {
+                        case HardwareType.Cpu:
+                            MonitorSettings.IsCpuEnabled = item.IsEnabled;
+                            MonitorSettings.MonitorViewSettings.CpuView.ShowLine = item.ShowLine;
+                            MonitorSettings.MonitorViewSettings.CpuView.DotDensity = item.DotDensity;
+                            MonitorSettings.MonitorViewSettings.CpuView.CanvasHeight = item.CanvasHeight;
+                            MonitorSettings.MonitorViewSettings.CpuView.CanvasWidth = item.CanvasWidth;
+                            MonitorSettings.MonitorViewSettings.CpuView.Background = new() { background.A, background.R, background.G, background.B };
+                            MonitorSettings.MonitorViewSettings.CpuView.Foreground = new() { foreground.A, foreground.R, foreground.G, foreground.B };
+                            MonitorSettings.MonitorViewSettings.CpuView.StrokeBrush = new() { strokeBrush.A, strokeBrush.R, strokeBrush.G, strokeBrush.B };
+                            MonitorSettings.MonitorViewSettings.CpuView.FillBrush = new() { fillBrush.A, fillBrush.R, fillBrush.G, fillBrush.B };
+                            break;
+                        case HardwareType.Memory:
+                            MonitorSettings.IsMemoryEnabled = item.IsEnabled;
+                            MonitorSettings.MonitorViewSettings.MemoryView.ShowLine = item.ShowLine;
+                            MonitorSettings.MonitorViewSettings.MemoryView.DotDensity = item.DotDensity;
+                            MonitorSettings.MonitorViewSettings.MemoryView.CanvasHeight = item.CanvasHeight;
+                            MonitorSettings.MonitorViewSettings.MemoryView.CanvasWidth = item.CanvasWidth;
+                            MonitorSettings.MonitorViewSettings.MemoryView.Background = new() { background.A, background.R, background.G, background.B };
+                            MonitorSettings.MonitorViewSettings.MemoryView.Foreground = new() { foreground.A, foreground.R, foreground.G, foreground.B };
+                            MonitorSettings.MonitorViewSettings.MemoryView.StrokeBrush = new() { strokeBrush.A, strokeBrush.R, strokeBrush.G, strokeBrush.B };
+                            MonitorSettings.MonitorViewSettings.MemoryView.FillBrush = new() { fillBrush.A, fillBrush.R, fillBrush.G, fillBrush.B };
+                            break;
+                        case HardwareType.GpuNvidia:
+                        case HardwareType.GpuAmd:
+                            MonitorSettings.IsGpuEnabled = item.IsEnabled;
+                            MonitorSettings.MonitorViewSettings.GpuView.ShowLine = item.ShowLine;
+                            MonitorSettings.MonitorViewSettings.GpuView.DotDensity = item.DotDensity;
+                            MonitorSettings.MonitorViewSettings.GpuView.CanvasHeight = item.CanvasHeight;
+                            MonitorSettings.MonitorViewSettings.GpuView.CanvasWidth = item.CanvasWidth;
+                            MonitorSettings.MonitorViewSettings.GpuView.Background = new() { background.A, background.R, background.G, background.B };
+                            MonitorSettings.MonitorViewSettings.GpuView.Foreground = new() { foreground.A, foreground.R, foreground.G, foreground.B };
+                            MonitorSettings.MonitorViewSettings.GpuView.StrokeBrush = new() { strokeBrush.A, strokeBrush.R, strokeBrush.G, strokeBrush.B };
+                            MonitorSettings.MonitorViewSettings.GpuView.FillBrush = new() { fillBrush.A, fillBrush.R, fillBrush.G, fillBrush.B };
+                            break;
+                        case HardwareType.Storage:
+                            MonitorSettings.IsStorageEnabled = item.IsEnabled;
+                            MonitorSettings.MonitorViewSettings.StorageView.ShowLine = item.ShowLine;
+                            MonitorSettings.MonitorViewSettings.StorageView.DotDensity = item.DotDensity;
+                            MonitorSettings.MonitorViewSettings.StorageView.CanvasHeight = item.CanvasHeight;
+                            MonitorSettings.MonitorViewSettings.StorageView.CanvasWidth = item.CanvasWidth;
+                            MonitorSettings.MonitorViewSettings.StorageView.Background = new() { background.A, background.R, background.G, background.B };
+                            MonitorSettings.MonitorViewSettings.StorageView.Foreground = new() { foreground.A, foreground.R, foreground.G, foreground.B };
+                            MonitorSettings.MonitorViewSettings.StorageView.StrokeBrush = new() { strokeBrush.A, strokeBrush.R, strokeBrush.G, strokeBrush.B };
+                            MonitorSettings.MonitorViewSettings.StorageView.FillBrush = new() { fillBrush.A, fillBrush.R, fillBrush.G, fillBrush.B };
+                            break;
+                        case HardwareType.Network:
+                            MonitorSettings.IsNetworkEnabled = item.IsEnabled;
+                            MonitorSettings.MonitorViewSettings.NetworkView.ShowLine = item.ShowLine;
+                            MonitorSettings.MonitorViewSettings.NetworkView.DotDensity = item.DotDensity;
+                            MonitorSettings.MonitorViewSettings.NetworkView.CanvasHeight = item.CanvasHeight;
+                            MonitorSettings.MonitorViewSettings.NetworkView.CanvasWidth = item.CanvasWidth;
+                            MonitorSettings.MonitorViewSettings.NetworkView.Background = new() { background.A, background.R, background.G, background.B };
+                            MonitorSettings.MonitorViewSettings.NetworkView.Foreground = new() { foreground.A, foreground.R, foreground.G, foreground.B };
+                            MonitorSettings.MonitorViewSettings.NetworkView.StrokeBrush = new() { strokeBrush.A, strokeBrush.R, strokeBrush.G, strokeBrush.B };
+                            MonitorSettings.MonitorViewSettings.NetworkView.FillBrush = new() { fillBrush.A, fillBrush.R, fillBrush.G, fillBrush.B };
+                            break;
+                    }
+                });
 
-            HardwareServices = new(MonitorSettings);
-            MonitorSettings.Save2Json();
-            //Task.Delay(1000).Wait();
-            JobManager.AddJob(HardwareServices, e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds().DelayFor(1000));
-            JobManager.Start();
+                HardwareServices = new(MonitorSettings);
+                MonitorSettings.Save2Json();
+                //Task.Delay(1000).Wait();
+                JobManager.AddJob(HardwareServices, e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds().DelayFor(1000));
+                JobManager.Start();
+                //}).RunInBackground();
+            }).ContinueWith(_ =>
+            {
+                Task.Delay(1000).Wait();
+                new Action(() =>
+                {
+                    IsSaving = Visibility.Collapsed;
+                    Opacity = 1d;
+                }).RunInBackground();
+            });
         }
 
         private void Cancel()

@@ -33,12 +33,41 @@
         <StackPanel
             Margin="10,10,10,45"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+            VerticalAlignment="Stretch"
+            Opacity="{Binding Opacity}">
             <StackPanel>
                 <hc:Divider
                     Margin="0,5,0,0"
                     HorizontalContentAlignment="Left"
                     Content="通用设置" />
+                <Grid>
+                    <Label
+                        Height="30"
+                        Padding="0,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0,0,0,0"
+                        Content="开机启动" />
+                    <CheckBox
+                        Height="30"
+                        Margin="140,0,0,0"
+                        VerticalAlignment="Stretch"
+                        IsChecked="{Binding IsAutoRun}" />
+                    <Label
+                        Height="30"
+                        Padding="0,0,5,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0,0,0,0"
+                        Content="可能会不成功"
+                        FontSize="10"
+                        FontStyle="Italic"
+                        IsEnabled="False" />
+                </Grid>
                 <hc:NumericUpDown
                     Margin="0,5,0,0"
                     hc:TitleElement.Title="主窗口宽度"
@@ -262,6 +291,7 @@
         <Grid
             Margin="5"
             VerticalAlignment="Bottom"
+            Opacity="{Binding Opacity}"
             ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <hc:ButtonGroup
                 HorizontalAlignment="Left"
@@ -269,7 +299,6 @@
                 VerticalContentAlignment="Stretch">
                 <Button Command="{Binding RestoreCommand}" Content="恢复默认" />
             </hc:ButtonGroup>
-
             <hc:ButtonGroup
                 HorizontalAlignment="Right"
                 HorizontalContentAlignment="Stretch"
@@ -280,6 +309,13 @@
                     Style="{StaticResource ButtonPrimary}" />
                 <Button Command="{Binding CancelCommand}" Content="取消" />
             </hc:ButtonGroup>
+        </Grid>
+        <Grid>
+            <hc:LoadingCircle
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                Visibility="{Binding IsSaving}" />
         </Grid>
     </Grid>
 </UserControl>

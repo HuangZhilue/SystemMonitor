@@ -58,7 +58,6 @@ namespace SystemMonitor.Helper
             return Math.Round(size, 2);
         }
 
-
         public static void RunInBackground(this Action action)
         {
             Application.Current.Dispatcher.Invoke(action, DispatcherPriority.Background);

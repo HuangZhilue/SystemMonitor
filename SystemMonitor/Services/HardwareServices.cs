@@ -1,12 +1,10 @@
 ﻿using FluentScheduler;
 using LibreHardwareMonitor.Hardware;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
-using SystemMonitor.Helper;
 using SystemMonitor.Models.SettingsModel;
 
 namespace SystemMonitor.Services
@@ -79,7 +77,7 @@ namespace SystemMonitor.Services
     {
         //private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
-        private MonitorSettings MonitorSettings { get; set; } // = ServicesProvider.GetRequiredService<MonitorSettings>();
+        private MonitorSettings MonitorSettings { get; } // = ServicesProvider.GetRequiredService<MonitorSettings>();
 
         private Computer Computer { get; }
         private UpdateVisitor UpdateVisitor { get; } = new();

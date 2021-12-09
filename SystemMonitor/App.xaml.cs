@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Prism.Ioc;
 using Prism.Modularity;
+using System;
 using System.Windows;
 using SystemMonitor.Models.SettingsModel;
 using SystemMonitor.Services;
@@ -39,6 +40,25 @@ namespace SystemMonitor
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
+        }
+
+        protected virtual void LoadModuleCompleted(IModuleInfo moduleInfo, Exception error, bool isHandled)
+        {
+            if (error != null && error is ContainerResolutionException cre)
+            {
+                var errors = cre.GetErrors();
+                foreach ((var type, var ex) in errors)
+                {
+                    Console.WriteLine($"Error with: {type.FullName}\r\n{ex.GetType().Name}: {ex.Message}");
+                    var r = MessageBox.Show($"Error with: {type.FullName}\r\n{ex.GetType().Name}: {ex.Message}\r\n", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error);
+                    switch (r)
+                    {
+                        case MessageBoxResult.OK:
+                            Current.Shutdown();
+                            break;
+                    }
+                }
+            }
         }
     }
 }

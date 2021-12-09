@@ -36,12 +36,11 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _windowsWidth, value);
         }
 
-        public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; set; } =
-            new();
+        public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; } = new();
 
-        public DelegateCommand CloseAppCommand { get; set; }
-        public DelegateCommand RestartAppCommand { get; set; }
-        public DelegateCommand ShowSettingsViewCommand { get; set; }
+        public DelegateCommand CloseAppCommand { get; }
+        public DelegateCommand RestartAppCommand { get; }
+        public DelegateCommand ShowSettingsViewCommand { get; }
 
         //private static LimitList<float> NetworkSpeedList { get; } = new(60);
         //private static float LastMaxY { get; set; } = 100f;

@@ -80,7 +80,7 @@ namespace SystemMonitor.ViewModels
 
         public void OnDialogOpened(IDialogParameters parameters)
         {
-            if (parameters is not null && parameters.Count > 0 && parameters.ContainsKey(nameof(SolidColorBrush)))
+            if (parameters?.Count > 0 && parameters.ContainsKey(nameof(SolidColorBrush)))
             {
                 SelectedBrush = parameters.GetValue<SolidColorBrush>(nameof(SolidColorBrush));
             }
