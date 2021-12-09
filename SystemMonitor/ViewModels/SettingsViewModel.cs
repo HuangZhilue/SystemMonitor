@@ -1,4 +1,5 @@
-﻿using LibreHardwareMonitor.Hardware;
+﻿using FluentScheduler;
+using LibreHardwareMonitor.Hardware;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Prism.Commands;
@@ -61,7 +62,7 @@ namespace SystemMonitor.ViewModels
         public DelegateCommand<SettingsModels> SelectionChangedCommand { get; set; }
         public DelegateCommand<SettingsModels> IndexUpChangedCommand { get; set; }
         public DelegateCommand<SettingsModels> IndexDownChangedCommand { get; set; }
-        public DelegateCommand<SolidColorBrush> SelectColorCommand { get; set; }
+        public DelegateCommand<string> SelectColorCommand { get; set; }
         private MonitorSettings MonitorSettings { get; set; }
         private HardwareServices HardwareServices { get; set; }
         private IConfigurationRoot Configuration { get; set; }
@@ -77,7 +78,7 @@ namespace SystemMonitor.ViewModels
             SelectionChangedCommand = new DelegateCommand<SettingsModels>(SelectionChanged);
             IndexUpChangedCommand = new DelegateCommand<SettingsModels>(IndexUpChanged);
             IndexDownChangedCommand = new DelegateCommand<SettingsModels>(IndexDownChanged);
-            SelectColorCommand = new DelegateCommand<SolidColorBrush>(SelectColor);
+            SelectColorCommand = new DelegateCommand<string>(SelectColor);
             SaveCommand = new DelegateCommand(Save);
             CancelCommand = new DelegateCommand(Cancel);
             RestoreCommand = new DelegateCommand(Restore);
@@ -179,6 +180,13 @@ namespace SystemMonitor.ViewModels
 
         private void Save()
         {
+            JobManager.Stop();
+            JobManager.AllSchedules.ToList().ForEach(job =>
+            {
+                job.Disable();
+            });
+            JobManager.RemoveAllJobs();
+
             MonitorSettings.LoopInterval = LoopInterval;
             MonitorSettings.WindowsWidth = WindowsWidth;
             MonitorSettings.HardwareIndex.Clear();
@@ -249,8 +257,11 @@ namespace SystemMonitor.ViewModels
                 }
             });
 
-            HardwareServices.IsHardwareChange = true;
+            HardwareServices = new(MonitorSettings);
             MonitorSettings.Save2Json();
+            //Task.Delay(1000).Wait();
+            JobManager.AddJob(HardwareServices, e => e.ToRunEvery(MonitorSettings.LoopInterval).Milliseconds().DelayFor(1000));
+            JobManager.Start();
         }
 
         private void Cancel()
@@ -282,13 +293,38 @@ namespace SystemMonitor.ViewModels
 
         #endregion Save & Cancel & Restore
 
-        private void SelectColor(SolidColorBrush obj)
+        private void SelectColor(string obj)
         {
             Debug.WriteLine(obj);
             IDialogParameters parameters = new DialogParameters();
-            if (obj is not null)
+            if (obj is not null && obj.Trim() != "")
             {
-                parameters.Add(nameof(SolidColorBrush), obj);
+                SolidColorBrush brush = default;
+                switch (obj)
+                {
+                    case "SelectedSettings.StrokeBrush":
+                        {
+                            brush = SelectedSettings.StrokeBrush;
+                            break;
+                        }
+                    case "SelectedSettings.FillBrush":
+                        {
+                            brush = SelectedSettings.FillBrush;
+                            break;
+                        }
+                    case "SelectedSettings.Background":
+                        {
+                            brush = SelectedSettings.Background;
+                            break;
+                        }
+                    case "SelectedSettings.Foreground":
+                        {
+                            brush = SelectedSettings.Foreground;
+                            break;
+                        }
+                }
+                //parameters.Add(nameof(SolidColorBrush), obj);
+                parameters.Add(nameof(SolidColorBrush), brush);
             }
 
             DialogService.ShowDialog(nameof(Views.ColorPicker), parameters, r =>
@@ -299,6 +335,29 @@ namespace SystemMonitor.ViewModels
                     && r.Parameters.ContainsKey("SelectedBrush"))
                 {
                     SolidColorBrush selectedBrush = r.Parameters.GetValue<SolidColorBrush>("SelectedBrush");
+                    switch (obj)
+                    {
+                        case "SelectedSettings.StrokeBrush":
+                            {
+                                SelectedSettings.StrokeBrush = selectedBrush;
+                                break;
+                            }
+                        case "SelectedSettings.FillBrush":
+                            {
+                                SelectedSettings.FillBrush = selectedBrush;
+                                break;
+                            }
+                        case "SelectedSettings.Background":
+                            {
+                                SelectedSettings.Background = selectedBrush;
+                                break;
+                            }
+                        case "SelectedSettings.Foreground":
+                            {
+                                SelectedSettings.Foreground = selectedBrush;
+                                break;
+                            }
+                    }
                 }
             });
         }

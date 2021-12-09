@@ -1,5 +1,6 @@
 ﻿using FluentScheduler;
 using LibreHardwareMonitor.Hardware;
+using Microsoft.Extensions.Configuration;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
@@ -44,14 +45,16 @@ namespace SystemMonitor.ViewModels
 
         //private static LimitList<float> NetworkSpeedList { get; } = new(60);
         //private static float LastMaxY { get; set; } = 100f;
-        private static MonitorSettings MonitorSettings { get; set; }
-        private static IDialogService DialogService { get; set; }
+        private MonitorSettings MonitorSettings { get; set; }
+        private IConfigurationRoot Configuration { get; }
+        private IDialogService DialogService { get; }
 
-        public MainWindowViewModel(HardwareServices hardwareServices, MonitorSettings monitorSettings, IDialogService dialogService)
+        public MainWindowViewModel(HardwareServices hardwareServices, MonitorSettings monitorSettings, IConfigurationRoot configuration, IDialogService dialogService)
         {
             MonitorSettings = monitorSettings;
             Title = "System Monitor";
             DialogService = dialogService;
+            Configuration = configuration;
 
             WindowsWidth = MonitorSettings.WindowsWidth;
             if (MonitorSettings.HardwareIndex.Count == 0)
@@ -87,6 +90,7 @@ namespace SystemMonitor.ViewModels
             HardwareServicesCallBack.StorageChangeEvent -= HardwareServicesCallBack_StorageChangeEvent;
             new Action(() =>
             {
+                MonitorSettings = Configuration.GetSection("MonitorSettings").Get<MonitorSettings>();
                 Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent RunInBackground");
                 DisplayItemCollection.Clear();
                 MonitorSettings.HardwareIndex.ForEach(i =>
@@ -229,6 +233,7 @@ namespace SystemMonitor.ViewModels
                     item.Item2 = Math.Abs(gpu.GpuTemperatures - -999) <= 0
                         ? ""
                         : $"{Convert.ToInt32(gpu.GpuTemperatures)}℃";
+                    item.Item3 = $"FPS {gpu.FullscreenFPS}";
                     item.PointData = Convert.ToInt32(gpu.GpuLoad);
                     item.CloneBrush();
                     item.PointCollection.InsertAndMove(item);

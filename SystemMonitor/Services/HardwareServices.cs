@@ -79,19 +79,19 @@ namespace SystemMonitor.Services
     {
         //private static IServiceProvider ServicesProvider { get; } = Di.ServiceProvider;
 
-        private static MonitorSettings MonitorSettings { get; set; } // = ServicesProvider.GetRequiredService<MonitorSettings>();
+        private MonitorSettings MonitorSettings { get; set; } // = ServicesProvider.GetRequiredService<MonitorSettings>();
 
         private Computer Computer { get; }
         private UpdateVisitor UpdateVisitor { get; } = new();
         private List<string> ActiveAdapterName { get; } = new();
         private List<HardwareType> EnableHardwareList { get; } = new();
-        public bool IsHardwareChange { get; set; } = true;
+        private bool IsHardwareChange { get; set; }
         private static object Lock { get; } = new();
 
         public HardwareServices(MonitorSettings monitorSettings)
         {
             MonitorSettings = monitorSettings;
-
+            IsHardwareChange = true;
             Computer = new Computer
             {
                 IsCpuEnabled = MonitorSettings.IsCpuEnabled,
@@ -234,6 +234,7 @@ namespace SystemMonitor.Services
                     var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).Average(a => a.Value) ?? 0f;
                     var temperature = t.Sensors.Where(s => s.SensorType == SensorType.Temperature)
                         .Average(a => a.Value) ?? -999f;
+                    var fps = t.Sensors.Where(s => s.Name.Contains("Fullscreen FPS", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
                     var m = new HardwareModel.Hardware4Gpu
                     {
                         GpuClock4Core = core,
@@ -243,7 +244,8 @@ namespace SystemMonitor.Services
                         GpuLoad = load,
                         GpuName = t.Name,
                         GpuTemperatures = temperature,
-                        Identifier = t.Identifier
+                        Identifier = t.Identifier,
+                        FullscreenFPS = fps
                     };
                     if (IsHardwareChange) EnableHardwareList.Add(t.HardwareType);
                     else HardwareServicesCallBack.OnGpuAChange(m);
@@ -258,6 +260,7 @@ namespace SystemMonitor.Services
                     var load = t.Sensors.Where(s => s.SensorType == SensorType.Load).Average(a => a.Value) ?? 0f;
                     var temperature = t.Sensors.Where(s => s.SensorType == SensorType.Temperature)
                         .Average(a => a.Value) ?? -999f;
+                    var fps = t.Sensors.Where(s => s.Name.Contains("Fullscreen FPS", StringComparison.OrdinalIgnoreCase)).Average(a => a.Value) ?? 0f;
                     var m = new HardwareModel.Hardware4Gpu
                     {
                         GpuClock4Core = core,
@@ -267,7 +270,8 @@ namespace SystemMonitor.Services
                         GpuLoad = load,
                         GpuName = t.Name,
                         GpuTemperatures = temperature,
-                        Identifier = t.Identifier
+                        Identifier = t.Identifier,
+                        FullscreenFPS = fps
                     };
                     if (IsHardwareChange) EnableHardwareList.Add(t.HardwareType);
                     else HardwareServicesCallBack.OnGpuNChange(m);
@@ -390,6 +394,7 @@ namespace SystemMonitor.Services
             public float GpuClock4Memory { get; set; }
             public float GpuLoad { get; set; }
             public float GpuTemperatures { get; set; } = -999;
+            public float FullscreenFPS { get; set; }
         }
 
         public class Hardware4Memory

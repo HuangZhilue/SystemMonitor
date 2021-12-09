@@ -184,7 +184,7 @@
                                     Background="{Binding SelectedSettings.StrokeBrush}"
                                     BorderBrush="{Binding SelectedSettings.StrokeBrush}"
                                     Command="{Binding SelectColorCommand}"
-                                    CommandParameter="{Binding SelectedSettings.StrokeBrush}"
+                                    CommandParameter="SelectedSettings.StrokeBrush"
                                     Content="{Binding SelectedSettings.StrokeBrush}"
                                     Foreground="{Binding SelectedSettings.StrokeBrush, Converter={StaticResource TextColorConverter}}" />
                             </Grid>
@@ -206,7 +206,7 @@
                                     Background="{Binding SelectedSettings.FillBrush}"
                                     BorderBrush="{Binding SelectedSettings.FillBrush}"
                                     Command="{Binding SelectColorCommand}"
-                                    CommandParameter="{Binding SelectedSettings.FillBrush}"
+                                    CommandParameter="SelectedSettings.FillBrush"
                                     Content="{Binding SelectedSettings.FillBrush}"
                                     Foreground="{Binding SelectedSettings.FillBrush, Converter={StaticResource TextColorConverter}}" />
                             </Grid>
@@ -228,7 +228,7 @@
                                     Background="{Binding SelectedSettings.Background}"
                                     BorderBrush="{Binding SelectedSettings.Background}"
                                     Command="{Binding SelectColorCommand}"
-                                    CommandParameter="{Binding SelectedSettings.Background}"
+                                    CommandParameter="SelectedSettings.Background"
                                     Content="{Binding SelectedSettings.Background}"
                                     Foreground="{Binding SelectedSettings.Background, Converter={StaticResource TextColorConverter}}" />
                             </Grid>
@@ -250,7 +250,7 @@
                                     Background="{Binding SelectedSettings.Foreground}"
                                     BorderBrush="{Binding SelectedSettings.Foreground}"
                                     Command="{Binding SelectColorCommand}"
-                                    CommandParameter="{Binding SelectedSettings.Foreground}"
+                                    CommandParameter="SelectedSettings.Foreground"
                                     Content="{Binding SelectedSettings.Foreground}"
                                     Foreground="{Binding SelectedSettings.Foreground, Converter={StaticResource TextColorConverter}}" />
                             </Grid>

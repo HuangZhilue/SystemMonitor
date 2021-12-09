@@ -26,10 +26,11 @@ namespace SystemMonitor
                 .Build();
             MonitorSettings monitorSettings = Configuration.GetSection("MonitorSettings").Get<MonitorSettings>();
             monitorSettings.Configuration = Configuration;
+            HardwareServices hardwareServices = new(monitorSettings);
 
             _ = containerRegistry
                 .RegisterInstance(Configuration)
-                .RegisterScoped<HardwareServices>()
+                .RegisterInstance(hardwareServices)
                 .RegisterInstance(monitorSettings);
 
             containerRegistry.RegisterDialog<Settings, SettingsViewModel>();
