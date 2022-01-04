@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     x:Name="userControl"
-    d:DesignHeight="450"
+    d:DesignHeight="520"
     d:DesignWidth="600"
     prism:ViewModelLocator.AutoWireViewModel="True"
     Background="White"
@@ -83,6 +83,29 @@
                     hc:TitleElement.TitleWidth="140"
                     Style="{StaticResource NumericUpDownExtend}"
                     Value="{Binding LoopInterval}" />
+                <Grid>
+                    <Label
+                        Height="30"
+                        Padding="0,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        BorderThickness="0,0,0,0"
+                        Content="背景颜色" />
+                    <Button
+                        Margin="140,0,0,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Background="{Binding MainWindowBackground}"
+                        BorderBrush="{Binding MainWindowBackground}"
+                        Command="{Binding SelectColorCommand}"
+                        CommandParameter="MainWindowBackground"
+                        Content="{Binding MainWindowBackground}"
+                        Foreground="{Binding MainWindowBackground, Converter={StaticResource TextColorConverter}}" />
+                </Grid>
             </StackPanel>
             <StackPanel>
                 <hc:Divider

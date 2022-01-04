@@ -50,8 +50,7 @@ namespace SystemMonitor
                 foreach ((var type, var ex) in errors)
                 {
                     Console.WriteLine($"Error with: {type.FullName}\r\n{ex.GetType().Name}: {ex.Message}");
-                    var r = MessageBox.Show($"Error with: {type.FullName}\r\n{ex.GetType().Name}: {ex.Message}\r\n", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error);
-                    switch (r)
+                    switch (MessageBox.Show($"Error with: {type.FullName}\r\n{ex.GetType().Name}: {ex.Message}\r\n", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error))
                     {
                         case MessageBoxResult.OK:
                             Current.Shutdown();

@@ -36,6 +36,14 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _windowsWidth, value);
         }
 
+        private SolidColorBrush _mainWindowBackground;
+
+        public SolidColorBrush MainWindowBackground
+        {
+            get => _mainWindowBackground;
+            set => SetProperty(ref _mainWindowBackground, value);
+        }
+
         public TrulyObservableCollection<TrulyObservableCollection<DisplayItems>> DisplayItemCollection { get; } = new();
 
         public DelegateCommand CloseAppCommand { get; }
@@ -56,6 +64,12 @@ namespace SystemMonitor.ViewModels
             Configuration = configuration;
 
             WindowsWidth = MonitorSettings.WindowsWidth;
+            MainWindowBackground = new(Color.FromArgb(
+                MonitorSettings.MainWindowBackground[0],
+                MonitorSettings.MainWindowBackground[1],
+                MonitorSettings.MainWindowBackground[2],
+                MonitorSettings.MainWindowBackground[3]));
+
             if (MonitorSettings.HardwareIndex.Count == 0)
             {
                 MonitorSettings.HardwareIndex.Add(HardwareType.Cpu);
@@ -91,6 +105,14 @@ namespace SystemMonitor.ViewModels
             {
                 MonitorSettings = Configuration.GetSection("MonitorSettings").Get<MonitorSettings>();
                 Debug.WriteLine("HardwareServicesCallBackOnHardwareChangeEvent RunInBackground");
+
+                WindowsWidth = MonitorSettings.WindowsWidth;
+                MainWindowBackground = new(Color.FromArgb(
+                    MonitorSettings.MainWindowBackground[0],
+                    MonitorSettings.MainWindowBackground[1],
+                    MonitorSettings.MainWindowBackground[2],
+                    MonitorSettings.MainWindowBackground[3]));
+
                 DisplayItemCollection.Clear();
                 MonitorSettings.HardwareIndex.ForEach(i =>
                 {

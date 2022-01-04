@@ -25,6 +25,7 @@ namespace SystemMonitor.Models.SettingsModel
         public bool IsNetworkEnabled { get; set; }
         public bool IsStorageEnabled { get; set; }
         public List<HardwareType> HardwareIndex { get; set; } = new(); // { HardwareType.Cpu, HardwareType.Memory, HardwareType.Storage, HardwareType.Network, HardwareType.GpuAmd, HardwareType.GpuNvidia };
+        public List<byte> MainWindowBackground { get; set; } = new();
         public MonitorViewSettings MonitorViewSettings { get; set; }
 
         [JsonIgnore]
@@ -65,7 +66,7 @@ namespace SystemMonitor.Models.SettingsModel
         public double FontSize { get; set; } = 12d;
         public List<byte> StrokeBrush { get; set; } = new();
         public List<byte> FillBrush { get; set; } = new();
-        public List<byte> Background { get; set; } = new() { 125, 0, 0, 0 };
-        public List<byte> Foreground { get; set; } = new() { 255, 0, 255, 0 };
+        public List<byte> Background { get; set; } = new();
+        public List<byte> Foreground { get; set; } = new();
     }
 }

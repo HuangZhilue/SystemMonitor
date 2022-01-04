@@ -32,6 +32,7 @@ namespace SystemMonitor.ViewModels
         private bool _isAutoRun;
         private double _opacity = 1d;
         private Visibility _isSaving = Visibility.Hidden;
+        private SolidColorBrush _mainWindowBackground = new(Color.FromArgb(125, 0, 0, 0));
 
         public string Title
         {
@@ -75,6 +76,12 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _isSaving, value);
         }
 
+        public SolidColorBrush MainWindowBackground
+        {
+            get => _mainWindowBackground;
+            set => SetProperty(ref _mainWindowBackground, value);
+        }
+
         public TrulyObservableCollection<SettingsModels> SettingsModelList { get; } = new();
 
         public DelegateCommand<string> CloseDialogCommand { get; }
@@ -111,6 +118,11 @@ namespace SystemMonitor.ViewModels
         {
             LoopInterval = MonitorSettings.LoopInterval;
             WindowsWidth = MonitorSettings.WindowsWidth;
+            MainWindowBackground = new(Color.FromArgb(
+                MonitorSettings.MainWindowBackground[0],
+                MonitorSettings.MainWindowBackground[1],
+                MonitorSettings.MainWindowBackground[2],
+                MonitorSettings.MainWindowBackground[3]));
 
             {
                 RegistryKey registryKeyk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
@@ -220,6 +232,7 @@ namespace SystemMonitor.ViewModels
 
             // 因为SettingsModelList中的SolidColorBrush数据存在线程安全问题，暂时通过该方法继续操作
             var settingsModelList = JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(SettingsModelList.ToList()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() });
+            Color mainBackground = (Color)ColorConverter.ConvertFromString(JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(MainWindowBackground.ToString()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() }));
 
             Task.Run(() =>
             {
@@ -231,6 +244,16 @@ namespace SystemMonitor.ViewModels
 
                 MonitorSettings.LoopInterval = LoopInterval;
                 MonitorSettings.WindowsWidth = WindowsWidth;
+
+                //Color mainBackground = (Color)ColorConverter.ConvertFromString(MainWindowBackground.ToString());
+
+                MonitorSettings.MainWindowBackground = new()
+                {
+                    mainBackground.A,
+                    mainBackground.R,
+                    mainBackground.G,
+                    mainBackground.B
+                };
 
                 {
                     RegistryKey registryKeyk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
@@ -395,6 +418,11 @@ namespace SystemMonitor.ViewModels
                             brush = SelectedSettings.Foreground;
                             break;
                         }
+                    case "MainWindowBackground":
+                        {
+                            brush = MainWindowBackground;
+                            break;
+                        }
                 }
                 //parameters.Add(nameof(SolidColorBrush), obj);
                 parameters.Add(nameof(SolidColorBrush), brush);
@@ -428,6 +456,11 @@ namespace SystemMonitor.ViewModels
                         case "SelectedSettings.Foreground":
                             {
                                 SelectedSettings.Foreground = selectedBrush;
+                                break;
+                            }
+                        case "MainWindowBackground":
+                            {
+                                MainWindowBackground = selectedBrush;
                                 break;
                             }
                     }

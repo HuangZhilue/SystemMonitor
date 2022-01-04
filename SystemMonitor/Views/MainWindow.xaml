@@ -11,7 +11,7 @@
     prism:ViewModelLocator.AutoWireViewModel="True"
     AllowDrop="True"
     AllowsTransparency="True"
-    Background="{x:Null}"
+    Background="{Binding MainWindowBackground}"
     Foreground="{x:Null}"
     Icon="/Resources/icon.ico"
     ResizeMode="CanMinimize"
