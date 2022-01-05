@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31512.422
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemMonitor", "SystemMonitor\SystemMonitor.csproj", "{908402F1-8856-4AAF-BD5C-C28A37A40A65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizedResources", "LocalizedResources\LocalizedResources.csproj", "{68460A0D-8942-4CBA-A077-FFABBD25AF84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,11 +17,20 @@ Global
 		{908402F1-8856-4AAF-BD5C-C28A37A40A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{908402F1-8856-4AAF-BD5C-C28A37A40A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{908402F1-8856-4AAF-BD5C-C28A37A40A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68460A0D-8942-4CBA-A077-FFABBD25AF84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68460A0D-8942-4CBA-A077-FFABBD25AF84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68460A0D-8942-4CBA-A077-FFABBD25AF84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68460A0D-8942-4CBA-A077-FFABBD25AF84}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		RESX_PrefixTranslations = False
+		RESX_ConfirmAddLanguageFile = True
+		RESX_AutoCreateNewLanguageFiles = True
+		RESX_SortFileContentOnSave = True
+		RESX_NeutralResourcesLanguage = en-US
 		SolutionGuid = {FF8A92D6-7AD4-41FC-AA13-7859D82FE745}
 	EndGlobalSection
 EndGlobal

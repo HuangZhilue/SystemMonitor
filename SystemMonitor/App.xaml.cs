@@ -2,6 +2,8 @@
 using Prism.Ioc;
 using Prism.Modularity;
 using System;
+using System.Globalization;
+using System.Threading;
 using System.Windows;
 using SystemMonitor.Models.SettingsModel;
 using SystemMonitor.Services;
@@ -36,6 +38,11 @@ namespace SystemMonitor
 
             containerRegistry.RegisterDialog<Settings, SettingsViewModel>();
             containerRegistry.RegisterDialog<ColorPicker, ColorPickerViewModel>();
+
+            if (!string.IsNullOrWhiteSpace(monitorSettings.Language))
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(monitorSettings.Language);
+            }
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

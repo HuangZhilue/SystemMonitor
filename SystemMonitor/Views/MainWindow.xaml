@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:helper="clr-namespace:SystemMonitor.Helper"
+    xmlns:loc4Common="clr-namespace:LocalizedResources.Localization.Module.Common;assembly=LocalizedResources"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:views="clr-namespace:SystemMonitor.Views"
     x:Name="mainWindow"
@@ -31,18 +32,18 @@
         <hc:NotifyIcon Icon="/Resources/icon.ico" Text="System Monitor">
             <hc:NotifyIcon.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="{Binding ShowSettingsViewCommand, Mode=OneWay}" Header="设置">
+                    <MenuItem Command="{Binding ShowSettingsViewCommand, Mode=OneWay}" Header="{x:Static loc4Common:Resource.Options}">
                         <MenuItem.Icon>
                             <Image Source="/Resources/cog-regular-36.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="{Binding RestartAppCommand, Mode=OneWay}" Header="重启">
+                    <MenuItem Command="{Binding RestartAppCommand, Mode=OneWay}" Header="{x:Static loc4Common:Resource.Restart}">
                         <MenuItem.Icon>
                             <Image Source="/Resources/reset-regular-36.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Command="{Binding CloseAppCommand, Mode=OneWay}" Header="退出">
+                    <MenuItem Command="{Binding CloseAppCommand, Mode=OneWay}" Header="{x:Static loc4Common:Resource.Quit}">
                         <MenuItem.Icon>
                             <Image Source="/Resources/x-regular-36.png" />
                         </MenuItem.Icon>

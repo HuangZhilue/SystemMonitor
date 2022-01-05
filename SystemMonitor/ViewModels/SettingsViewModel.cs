@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -20,12 +21,14 @@ using SystemMonitor.Helper;
 using SystemMonitor.Models;
 using SystemMonitor.Models.SettingsModel;
 using SystemMonitor.Services;
+using Resource4Common = LocalizedResources.Localization.Module.Common.Resource;
+using Resource4Hardware = LocalizedResources.Localization.Module.Hardware.Resource;
 
 namespace SystemMonitor.ViewModels
 {
     public class SettingsViewModel : BindableBase, IDialogAware
     {
-        private string _title = "设置";
+        private string _title = Resource4Common.Options;
         private SettingsModels _selectedSettings;
         private int _loopInterval;
         private int _windowsWidth = 250;
@@ -33,6 +36,7 @@ namespace SystemMonitor.ViewModels
         private double _opacity = 1d;
         private Visibility _isSaving = Visibility.Hidden;
         private SolidColorBrush _mainWindowBackground = new(Color.FromArgb(125, 0, 0, 0));
+        private string _language = Resource4Common.Default;
 
         public string Title
         {
@@ -82,7 +86,19 @@ namespace SystemMonitor.ViewModels
             set => SetProperty(ref _mainWindowBackground, value);
         }
 
+        public string Language
+        {
+            get => _language;
+            set => SetProperty(ref _language, value);
+        }
+
         public TrulyObservableCollection<SettingsModels> SettingsModelList { get; } = new();
+        public List<string> LanguageList { get; } = new()
+        {
+            Resource4Common.Default,
+            "zh-CN",
+            "en-US"
+        };
 
         public DelegateCommand<string> CloseDialogCommand { get; }
         public DelegateCommand SaveCommand { get; }
@@ -123,6 +139,10 @@ namespace SystemMonitor.ViewModels
                 MonitorSettings.MainWindowBackground[1],
                 MonitorSettings.MainWindowBackground[2],
                 MonitorSettings.MainWindowBackground[3]));
+
+            Language = (!string.IsNullOrWhiteSpace(MonitorSettings.Language))
+                ? MonitorSettings.Language
+                : Resource4Common.Default;
 
             {
                 RegistryKey registryKeyk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
@@ -214,7 +234,7 @@ namespace SystemMonitor.ViewModels
                     ShowLine = viewBase.ShowLine
                 };
 
-                if (item.HardwareTypeString != "显卡" || (item.HardwareTypeString == "显卡" && !SettingsModelList.Any(s => s.HardwareTypeString.Contains("显卡"))))
+                if (item.HardwareTypeString != Resource4Hardware.GPU || (item.HardwareTypeString == Resource4Hardware.GPU && !SettingsModelList.Any(s => s.HardwareTypeString.Contains(Resource4Hardware.GPU))))
                 {
                     SettingsModelList.Add(item);
                 }
@@ -230,8 +250,25 @@ namespace SystemMonitor.ViewModels
             IsSaving = Visibility.Visible;
             Opacity = 0.5d;
 
-            // 因为SettingsModelList中的SolidColorBrush数据存在线程安全问题，暂时通过该方法继续操作
-            var settingsModelList = JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(SettingsModelList.ToList()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() });
+            var languageBak = MonitorSettings.Language;
+            var languageChange = false;
+            MonitorSettings.Language = (!string.IsNullOrWhiteSpace(Language) && Language != Resource4Common.Default)
+                ? Language
+                : null;
+
+            if (!string.IsNullOrWhiteSpace(MonitorSettings.Language))
+            {
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(MonitorSettings.Language);
+            }
+            else
+            {
+                Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
+            }
+
+            if (languageBak != MonitorSettings.Language) languageChange = true;
+
+             // 因为SettingsModelList中的SolidColorBrush数据存在线程安全问题，暂时通过该方法继续操作
+             var settingsModelList = JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(SettingsModelList.ToList()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() });
             Color mainBackground = (Color)ColorConverter.ConvertFromString(JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(MainWindowBackground.ToString()), new JsonSerializerSettings() { Context = new System.Runtime.Serialization.StreamingContext() }));
 
             Task.Run(() =>
@@ -356,6 +393,10 @@ namespace SystemMonitor.ViewModels
                 {
                     IsSaving = Visibility.Collapsed;
                     Opacity = 1d;
+                    if (languageChange)
+                    {
+                        CloseDialog("refresh");
+                    }
                 }).RunInBackground();
             });
         }
@@ -383,7 +424,7 @@ namespace SystemMonitor.ViewModels
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _ = MessageBox.Show(ex.Message, Resource4Common.Error, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -511,16 +552,16 @@ namespace SystemMonitor.ViewModels
 #pragma warning restore IDE0066, IDE0010 // 将 switch 语句转换为表达式 / 补充缺失项
             {
                 case HardwareType.Cpu:
-                    return "CPU";
+                    return Resource4Hardware.CPU;
                 case HardwareType.Memory:
-                    return "内存";
+                    return Resource4Hardware.Memory;
                 case HardwareType.GpuNvidia:
                 case HardwareType.GpuAmd:
-                    return "显卡";
+                    return Resource4Hardware.GPU;
                 case HardwareType.Storage:
-                    return "存储";
+                    return Resource4Hardware.Disk;
                 case HardwareType.Network:
-                    return "网络";
+                    return Resource4Hardware.Network;
                 default: return type.ToString("G");
             }
         }
@@ -540,6 +581,9 @@ namespace SystemMonitor.ViewModels
                     break;
                 case "false":
                     result = ButtonResult.Cancel;
+                    break;
+                case "refresh":
+                    result = ButtonResult.Retry;
                     break;
             }
 

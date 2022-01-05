@@ -15,6 +15,8 @@ using SystemMonitor.Helper;
 using SystemMonitor.Models;
 using SystemMonitor.Models.SettingsModel;
 using SystemMonitor.Services;
+using Resource4Common = LocalizedResources.Localization.Module.Common.Resource;
+using Resource4Hardware = LocalizedResources.Localization.Module.Hardware.Resource;
 
 namespace SystemMonitor.ViewModels
 {
@@ -219,7 +221,7 @@ namespace SystemMonitor.ViewModels
                     DisplayItemCollection[index1].Count > cpu.Index &&
                     DisplayItemCollection[index1][cpu.Index] is { } item)
                 {
-                    item.Name = "CPU";
+                    item.Name = Resource4Hardware.CPU;
                     item.Index = cpu.IndexString;
                     item.Identifier = cpu.Identifier;
                     item.Item1 = $"{Convert.ToInt32(cpu.CpuLoad)}%";
@@ -247,7 +249,7 @@ namespace SystemMonitor.ViewModels
                     DisplayItemCollection[index1].Count > gpu.Index &&
                     DisplayItemCollection[index1][gpu.Index] is { } item)
                 {
-                    item.Name = "GPU";
+                    item.Name = Resource4Hardware.GPU;
                     item.Index = gpu.IndexString;
                     item.Identifier = gpu.Identifier;
                     item.Item1 = $"{Convert.ToInt32(gpu.GpuLoad)}%";
@@ -275,7 +277,7 @@ namespace SystemMonitor.ViewModels
                     DisplayItemCollection[index1].Count > gpu.Index &&
                     DisplayItemCollection[index1][gpu.Index] is { } item)
                 {
-                    item.Name = "GPU";
+                    item.Name = Resource4Hardware.GPU;
                     item.Index = gpu.IndexString;
                     item.Identifier = gpu.Identifier;
                     item.Item1 = $"{Convert.ToInt32(gpu.GpuLoad)}%";
@@ -302,7 +304,7 @@ namespace SystemMonitor.ViewModels
                     DisplayItemCollection[index1].Count > memory.Index &&
                     DisplayItemCollection[index1][memory.Index] is { } item)
                 {
-                    item.Name = "内存";
+                    item.Name = Resource4Hardware.Memory;
                     item.Index = memory.IndexString;
                     item.Identifier = memory.Identifier;
                     item.Item1 = $"{memory.MemoryUsedDisplay}";
@@ -360,8 +362,8 @@ namespace SystemMonitor.ViewModels
                     item.NetworkSpeedList.Insert(0, network.NetworkThroughput4DownloadSpeed);
                     item.Index = network.IndexString;
                     item.Name = $"{network.NetworkName}";
-                    item.Item1 = $"发送: {uSpeed}"; // $"发送: {uSpeed} {unitU}"
-                    item.Item2 = $"接收: {dSpeed} {unitD}";
+                    item.Item1 = $"{Resource4Common.Send}: {uSpeed}"; // $"发送: {uSpeed} {unitU}"
+                    item.Item2 = $"{Resource4Common.Receive}: {dSpeed} {unitD}";
                     item.PointData = network.NetworkThroughput4DownloadSpeed;// Convert.ToInt32(dSpeed);
                     item.CloneBrush();
                     item.PointCollection.InsertAndMove(item);
@@ -384,7 +386,7 @@ namespace SystemMonitor.ViewModels
                     DisplayItemCollection[index1].Count > disk.Index &&
                     DisplayItemCollection[index1][disk.Index] is { } item)
                 {
-                    item.Name = $"磁盘 {disk.DiskName}";
+                    item.Name = $"{Resource4Hardware.Disk} {disk.DiskName}";
                     item.Index = disk.IndexString;
                     item.Identifier = disk.Identifier;
                     item.Item1 = $"{Convert.ToInt32(disk.DiskLoad4TotalActivity)}%";
@@ -433,7 +435,14 @@ namespace SystemMonitor.ViewModels
         /// </summary>
         private void ShowSettingsView()
         {
-            DialogService.ShowDialog(nameof(Views.Settings), new DialogParameters(), r => Debug.WriteLine(r.ToString()));
+            DialogService.ShowDialog(nameof(Views.Settings), new DialogParameters(), r =>
+            {
+                if(r.Result == ButtonResult.Retry)
+                {
+                    ShowSettingsView();
+                }
+                Debug.WriteLine(r.Result.ToString());
+            });
         }
 
         #endregion

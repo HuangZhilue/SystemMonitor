@@ -6,6 +6,8 @@
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:loc4Common="clr-namespace:LocalizedResources.Localization.Module.Common;assembly=LocalizedResources"
+    xmlns:loc4SystemMonitor="clr-namespace:LocalizedResources.Localization.Module.SystemMonitor;assembly=LocalizedResources"
     xmlns:local="clr-namespace:SystemMonitor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
@@ -39,7 +41,15 @@
                 <hc:Divider
                     Margin="0,5,0,0"
                     HorizontalContentAlignment="Left"
-                    Content="通用设置" />
+                    Content="{x:Static loc4Common:Resource.GeneralSettings}" />
+                <hc:ComboBox
+                    Margin="0,5,0,0"
+                    hc:InfoElement.Title="语言/Language"
+                    hc:InfoElement.TitlePlacement="Left"
+                    hc:InfoElement.TitleWidth="140"
+                    ItemsSource="{Binding LanguageList}"
+                    SelectedItem="{Binding Language}"
+                    Text="语言/language" />
                 <Grid>
                     <Label
                         Height="30"
@@ -49,7 +59,7 @@
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         BorderThickness="0,0,0,0"
-                        Content="开机启动" />
+                        Content="{x:Static loc4Common:Resource.AutomaticStart}" />
                     <CheckBox
                         Height="30"
                         Margin="140,0,0,0"
@@ -63,14 +73,14 @@
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         BorderThickness="0,0,0,0"
-                        Content="可能会不成功"
+                        Content="{x:Static loc4Common:Resource.MayBeUnsuccessful}"
                         FontSize="10"
                         FontStyle="Italic"
                         IsEnabled="False" />
                 </Grid>
                 <hc:NumericUpDown
                     Margin="0,5,0,0"
-                    hc:TitleElement.Title="主窗口宽度"
+                    hc:TitleElement.Title="{x:Static loc4SystemMonitor:Resource.MainWindowWidth}"
                     hc:TitleElement.TitlePlacement="Left"
                     hc:TitleElement.TitleWidth="140"
                     Style="{StaticResource NumericUpDownExtend}"
@@ -78,7 +88,7 @@
                 <hc:NumericUpDown
                     Margin="0,5,0,0"
                     hc:Minimum="100"
-                    hc:TitleElement.Title="监控数据更新频率"
+                    hc:TitleElement.Title="{x:Static loc4SystemMonitor:Resource.MonitorUpdateFrequency}"
                     hc:TitleElement.TitlePlacement="Left"
                     hc:TitleElement.TitleWidth="140"
                     Style="{StaticResource NumericUpDownExtend}"
@@ -92,7 +102,7 @@
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         BorderThickness="0,0,0,0"
-                        Content="背景颜色" />
+                        Content="{x:Static loc4Common:Resource.BackgroundColor}" />
                     <Button
                         Margin="140,0,0,0"
                         HorizontalAlignment="Stretch"
@@ -111,7 +121,7 @@
                 <hc:Divider
                     Margin="0,5,0,0"
                     HorizontalContentAlignment="Left"
-                    Content="显示设置" />
+                    Content="{x:Static loc4SystemMonitor:Resource.DisplayOptions}" />
                 <Grid Margin="0,5,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -194,25 +204,25 @@
                     <StackPanel Grid.Column="2" MinWidth="100">
                         <CheckBox
                             HorizontalAlignment="Stretch"
-                            Content="显示图形"
+                            Content="{x:Static loc4SystemMonitor:Resource.DisplayGraphics}"
                             IsChecked="{Binding SelectedSettings.ShowLine}" />
                         <hc:NumericUpDown
                             Margin="0,5,0,0"
-                            hc:TitleElement.Title="图形绘制密度"
+                            hc:TitleElement.Title="{x:Static loc4SystemMonitor:Resource.GraphicDrawingDensity}"
                             hc:TitleElement.TitlePlacement="Left"
                             hc:TitleElement.TitleWidth="140"
                             Style="{StaticResource NumericUpDownExtend}"
                             Value="{Binding SelectedSettings.DotDensity}" />
                         <hc:NumericUpDown
                             Margin="0,5,0,0"
-                            hc:TitleElement.Title="图形高度"
+                            hc:TitleElement.Title="{x:Static loc4SystemMonitor:Resource.GraphicHeight}"
                             hc:TitleElement.TitlePlacement="Left"
                             hc:TitleElement.TitleWidth="140"
                             Style="{StaticResource NumericUpDownExtend}"
                             Value="{Binding SelectedSettings.CanvasHeight}" />
                         <hc:NumericUpDown
                             Margin="0,5,0,0"
-                            hc:TitleElement.Title="图形宽度"
+                            hc:TitleElement.Title="{x:Static loc4SystemMonitor:Resource.GraphicWidth}"
                             hc:TitleElement.TitlePlacement="Left"
                             hc:TitleElement.TitleWidth="140"
                             Style="{StaticResource NumericUpDownExtend}"
@@ -225,7 +235,7 @@
                                     HorizontalAlignment="Left"
                                     HorizontalContentAlignment="Left"
                                     VerticalContentAlignment="Stretch"
-                                    Content="线条颜色"
+                                    Content="{x:Static loc4Common:Resource.StrokeBrushColor}"
                                     Style="{StaticResource BaseStyle}" />
                                 <Button
                                     Margin="140,0,0,0"
@@ -247,7 +257,7 @@
                                     HorizontalAlignment="Left"
                                     HorizontalContentAlignment="Left"
                                     VerticalContentAlignment="Stretch"
-                                    Content="填充颜色"
+                                    Content="{x:Static loc4Common:Resource.FillBrushColor}"
                                     Style="{StaticResource BaseStyle}" />
                                 <Button
                                     Margin="140,0,0,0"
@@ -269,7 +279,7 @@
                                     HorizontalAlignment="Left"
                                     HorizontalContentAlignment="Left"
                                     VerticalContentAlignment="Stretch"
-                                    Content="背景颜色"
+                                    Content="{x:Static loc4Common:Resource.BackgroundColor}"
                                     Style="{StaticResource BaseStyle}" />
                                 <Button
                                     Margin="140,0,0,0"
@@ -291,7 +301,7 @@
                                     HorizontalAlignment="Left"
                                     HorizontalContentAlignment="Left"
                                     VerticalContentAlignment="Stretch"
-                                    Content="字体颜色"
+                                    Content="{x:Static loc4Common:Resource.ForegroundColor}"
                                     Style="{StaticResource BaseStyle}" />
                                 <Button
                                     Margin="140,0,0,0"
@@ -320,7 +330,7 @@
                 HorizontalAlignment="Left"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch">
-                <Button Command="{Binding RestoreCommand}" Content="恢复默认" />
+                <Button Command="{Binding RestoreCommand}" Content="{x:Static loc4Common:Resource.Reset}" />
             </hc:ButtonGroup>
             <hc:ButtonGroup
                 HorizontalAlignment="Right"
@@ -328,9 +338,9 @@
                 VerticalContentAlignment="Stretch">
                 <Button
                     Command="{Binding SaveCommand}"
-                    Content="保存"
+                    Content="{x:Static loc4Common:Resource.Save}"
                     Style="{StaticResource ButtonPrimary}" />
-                <Button Command="{Binding CancelCommand}" Content="取消" />
+                <Button Command="{Binding CancelCommand}" Content="{x:Static loc4Common:Resource.Cancel}" />
             </hc:ButtonGroup>
         </Grid>
         <Grid>
